@@ -1,0 +1,284 @@
+    <!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="author" content="Albert Yu">
+		<meta name="description" content="长夜有尽时，苦思无绝期">
+		<meta name="generator" content="Hugo 0.15" />
+		<title>EmberConf 2016 开场演讲阅后感 &middot; 太极客</title>
+		<link rel="shortcut icon" href="http://very-geek.github.io/images/favicon.ico">
+		<link rel="stylesheet" href="http://very-geek.github.io/css/style.css">
+		<link rel="stylesheet" href="http://very-geek.github.io/css/highlight.css">
+		
+
+		
+		<link rel="stylesheet" href="http://very-geek.github.io/fontawesome/css/font-awesome.min.css">
+		
+
+		
+		<link href="http://very-geek.github.io/index.xml" rel="alternate" type="application/rss+xml" title="太极客" />
+		
+	</head>
+
+    <body>
+       <nav class="main-nav">
+	
+	
+		<a href='http://very-geek.github.io/'> <span class="arrow">←</span>首页</a>
+	
+
+	
+		<a href='http://very-geek.github.io/about'>关于</a>
+	
+
+	
+	<a class="cta" href="http://very-geek.github.io/index.xml">订阅</a>
+	
+</nav>
+
+        <section id="wrapper">
+            <article class="post">
+                <header>
+                    <h1>EmberConf 2016 开场演讲阅后感</h1>
+                    <h2 class="headline">
+                    April 30, 2016 
+                    <br>
+                    
+                    
+                        
+                            <a href="http://very-geek.github.io/tags/ember">ember</a>
+                        
+                            <a href="http://very-geek.github.io/tags/conference">conference</a>
+                        
+                            <a href="http://very-geek.github.io/tags/presentation">presentation</a>
+                        
+                            <a href="http://very-geek.github.io/tags/keynote">keynote</a>
+                        
+                    
+                    
+                    </h2>
+                </header>
+                <section id="post-body">
+                    
+
+<p>我自己是 Ember 的忠实拥趸，即便目前的产品没有用 Ember 技术栈也会关注 Ember 生态圈里的最新动态。这个视频来自于 EmberConf 2016 的开场演讲，主讲者是 Yehuda Katz 和 Tom Dale 这俩位老搭档。</p>
+
+<p>视频的前半段是回顾 2015，<em>25:00</em> 往后开始讲对未来的展望了，我喜欢看这类型的内容。虽然说没人能够准确的预见未来，但是通过聆听这些站在行业尖端的人物们的分析和见解依然可以勾勒出未来的大致形状。技术工作者也是需要投资的，投资的不是金钱与物质而是对技术发展方向的预判从而合理分配学习和研究的精力。</p>
+
+<h2 id="web-apps-和-mobile-apps:5f7b2199d9213c08f11f7b660bd516d0">Web Apps 和 Mobile Apps</h2>
+
+<p>两位谈到了一个有趣的现状：你拿着手机正在浏览推特，看见有人分享了放在 Instagram上的有趣的图片。你点进去看看，进入了 Instaram 的网站，然后就提示你安装 Instagram App。好吧，你点击安装就跳转到了 App Store／Google Play 然后安装，网速不错的话这个时间相对也不算太长。终于装好了，你觉得可以看了吧？结果点开一看——找不到刚才人家分享的那个图片了……</p>
+
+<p>这就是原生应用的尴尬之处。</p>
+
+<p>尽管人们总是在强调原生应用的功能优势、性能优势、体验优势等等，但无法否认互联网的根基在于 Web，无论原生应用怎么折腾，人们获取信息的最主要渠道依然是 Web。Web 应用的劣势的确是客观存在的，但却是能通过技术发展逐个解决的。所以用发展性的眼光来看 Web 应用的前景反而是最光明的。</p>
+
+<p>更重要的是过去两年人们不停地无情“批判”的 Web 应用的缺陷在现今其实都有了响应的技术解决方案，举例来说：</p>
+
+<table>
+<thead>
+<tr>
+<th align="left">Web 应用</th>
+<th align="left">原生应用</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td align="left">（几乎）迅速开启</td>
+<td align="left">迅速开启</td>
+</tr>
+
+<tr>
+<td align="left">（大部分）需要在线</td>
+<td align="left">离线可用</td>
+</tr>
+
+<tr>
+<td align="left">（一些）设备特性访问受限</td>
+<td align="left">丰富的设备特性支持</td>
+</tr>
+
+<tr>
+<td align="left">（一些）动效性能底下</td>
+<td align="left">快速，动效好</td>
+</tr>
+</tbody>
+</table>
+
+<p>这样的列表还可以扩展下去，但无非就是两个层面：参与性（粘性）和体验性。在这两方面现在的 Web 应用技术已经可以做到接近甚至媲美原生应用技术的程度了。</p>
+
+<ul>
+<li><strong>Web 应用“落地”</strong>：Service Worker／Add to Home Screen</li>
+<li><strong>消息推送</strong>：Service Worker</li>
+<li><strong>快速启动</strong>：Service Worker／App Cache</li>
+<li><strong>离线应用</strong>：Service Worder／App Cache／IndexedDB</li>
+</ul>
+
+<blockquote>
+<p>App Cache 在 FireFox 44 时已经处于 deprecated 状态并且在未来将会被移除以便为 Service Worker 让道，而 Google Chrome 也附和了这一提议。因此 Service Worker 是离线应用的未来，而且它能做到的事情更多。</p>
+</blockquote>
+
+<p>我非常惊讶且欣喜的看到 <em>Service Worker</em> 的强大和普适性，它马上成为我的研究列表上排名前三的技术点之一。</p>
+
+<p>同时我也想到自己在最近一段时间也曾分出一些精力去尝试了 React Native（或类似的）技术，不能否认它们会让你感觉很惊艳，但我也问过自己：<strong>为什么我们要用 Web 的技术去追求创造原生应用呢？</strong>或者反过来说为什么我们不继续大力发展 Web 技术让它在保持自身特色的同时进化到至少和原生应用平起平坐呢？</p>
+
+<p>从这个角度出发你甚至会悚然发现：React Native 甚至是有点“短视”和“杀鸡取卵”的技术方向，至少在我看来它的生命周期不会太长，刚好是在这个“青黄不接”的时代的中间产物。</p>
+
+<p>还有一些观点揪着 Web 框架的体积不放，说你们太大了打开都要花好久时间，怎么适合做应用呢？两位举了一个例子：原生的 Instagram iOS 应用有多大？<strong>39.1MB</strong></p>
+
+<p>当你下载 Instagram 的时候怎么就不觉得大了呢？这事儿其实要从俩方面来讲。一方面的确是有太多的 Web App 仅仅只是把功能做出来了而已，很多方面的优化实在是不到位，所以回回打开回回慢自然无法给人带来好的观感印象；但另外一方面 Web App 的确是能够做到极速的，不仅仅是首次加载而已。可是 Web 的技术栈处在一个迅速发展不断变化的阶段，即便是专业从业者也只有很少的一部分可以完全拿得下、吃得住。</p>
+
+<p>总之，Web Apps 的能力和潜力是够的，并且随着技术的发展它只会越来越好，更不要说它有一些先天优势是原生应用也好桌面应用也罢永远也无法媲美的，现阶段我们需要的不是选择去做哪个方向的指导性建议，而是一个足够好的技术栈和生态社区去带领我们发展和超越。Ember 是这个答案吗？我不能给出答案（不是没有答案，而是不能给出）。</p>
+
+<h2 id="平衡-功能-和-体积:5f7b2199d9213c08f11f7b660bd516d0">平衡“功能”和“体积”</h2>
+
+<p>体积在一定意义上决定了功能的丰富性，这很好理解，而另一方面体积又对加载与启动速度有反作用。我们如何在不牺牲任何功能的前提下，约束应用的体积，或者说加速应用的加载与启动呢？</p>
+
+<p>接下来的部分，Yehuda 和 Tom 讲述了 Ember 的计划，这个计划由六个技术点组成，依照应用程序的首次启动和后续启动分成两部分各负其责，它们分别是：</p>
+
+<ul>
+<li><strong>首次启动：</strong> <em>FastBoot</em>, <em>Project Svelte</em>, <em>Engines</em>, <em>String Loading</em></li>
+<li><strong>后续启动：</strong> <em>Service Worker</em>, <em>String Loading</em>, <em>App Cache</em></li>
+</ul>
+
+<h3 id="fastboot:5f7b2199d9213c08f11f7b660bd516d0">FastBoot</h3>
+
+<p>FastBoot 是一个 Big Thing，早在一年前的 EmberConf 2015 就已经宣布启动了。其实FastBoot 就是服务端渲染技术，但它不是一个单一的技术而是许多技术的综合解决方案。最近我一直在做以 React 为中心的服务端渲染，其中所涉及到的技术难点还是比较了解的。不要脸的说，我对自己做出的成果还算满意吧，但是 FastBoot 所要应对的技术范围和应用场景要大得多——这可不是为了满足某个应用或某个团队的解决方案；更重要的是FastBoot 还会在社区的推动下不断的发展下去，比起个人项目，其能量和影响是不可同日而语的。</p>
+
+<h3 id="project-svelte:5f7b2199d9213c08f11f7b660bd516d0">Project Svelte</h3>
+
+<p>这里的 Project 主要是指 Ember 自身。自v2.4 开始 Ember 开启了 LTS 的版本计划，也正是从这个版本开始，Ember 将会彻底移除过去一直在 Deprecated 的部分代码，这部分代码的体积是相当可观的。</p>
+
+<p>另外，Ember 的所有代码都将以 ES2015 Modules 的格式进行分发，以充分利用 Tree Shaking 技术（没错，就是 Webpack 2 也会有的 Tree Shaking）。还有一些不再需要的模块也将会被彻底清理掉。</p>
+
+<h3 id="engines:5f7b2199d9213c08f11f7b660bd516d0">Engines</h3>
+
+<p>大体上可以将 Engines 视作按需加载的处理技术，应用代码将被很容易的分成若干个包，而用户只需要加载他们正在使用的部分的对应代码。</p>
+
+<h3 id="string-loading:5f7b2199d9213c08f11f7b660bd516d0">String Loading</h3>
+
+<p>这是一个很有意思的举措，JavaScript 模块在分发时会以字符串的方式输出，于是只有真正被用到的模块代码才会产生解析求值的消耗。我不知道这对提升性能有多大的助益，回头有空去研究下里面的细节。</p>
+
+<h3 id="service-worker:5f7b2199d9213c08f11f7b660bd516d0">Service Worker</h3>
+
+<p>它的作用主要体现在三方面：1）离线应用；2）精细化控制网络通信／数据传输；3）主动性资源预加载。</p>
+
+<h3 id="app-cache:5f7b2199d9213c08f11f7b660bd516d0">App Cache</h3>
+
+<p>应用级别的缓存可以使得首次加载之后再也不需要下载静态资源，另外也可以做到应用程序自动升级。</p>
+
+<hr />
+
+<p>我相信上面谈到的东西都不算是什么新鲜事物或是黑魔法了，只是它们在实践中还是甚少被用到。为什么？缺少领头羊，缺少真正可靠的整合型解决方案。Ember 会是答案吗？Well，我不能回答你啊。</p>
+
+<p>接下来又回到了渲染性能的老话题了，在 Ember 的世界里也就是 Glimmer 了。Yehuda 展示了 Glimmer 2 的最新进展，结果当然是喜人的，渲染性能超过 React 2~3 倍（上千个组件不断 Update）。不过老实说我对这样的性能比较早就免疫了，现实中的开发渲染的性能瓶颈极少在框架的渲染引擎这里（除了做测试的极端例子之外）。换句话说，极端测试里能达到 60fps 并不能代表你做真实的项目就轻易能达到这个指标——你永远也不能指望一个框架帮你做到所有的事情。我们只能说 Glimmer 2 为我们打下了一个很好的基础，剩下的事还要靠我们自己。</p>
+
+<h2 id="总结:5f7b2199d9213c08f11f7b660bd516d0">总结</h2>
+
+<p>不管怎么说，就像 Tom 最后的总结一样：<em>The way we build web apps is changing</em> 。而 Ember 的口号也正式变成了 <em>A SDK of Web</em> ，这意味着我们已经走过了“如何去构建现代化 web 应用”的时代，正朝着“如何去构建更好的现代化 web 应用”进发。作为一个框架，Ember 已经交出了自己的答卷（打多少分是个人的事情，我给 90 分，剩下十分嘛……😸）；作为一个 SDK，Ember 正在路上，至少我是很期待着。</p>
+
+                </section>
+            </article>
+            <footer id="post-meta" class="clearfix">
+                <a href="https://twitter.com/yu5454">
+                        <img class="avatar" src="http://very-geek.github.io/images/avatar.png">
+                        <div>
+                            <span class="dark">Albert Yu</span>
+                            <span>As a designeer, I hope you can prove me wrong.</span>
+                        </div>
+                    </a>
+                <section id="sharing">
+                    <a class="twitter" href="https://twitter.com/intent/tweet?text=http%3a%2f%2fvery-geek.github.io%2finsight%2femberconf-2016-opening-keynote-by-yehuda-katz-and-tom-dale%2f - EmberConf%202016%20%e5%bc%80%e5%9c%ba%e6%bc%94%e8%ae%b2%e9%98%85%e5%90%8e%e6%84%9f by @yu5454"><span class="icon-twitter"> yu5454</span></a>
+
+<a class="facebook" href="#" onclick="
+    window.open(
+      'https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(location.href),
+      'facebook-share-dialog',
+      'width=626,height=436');
+    return false;"><span class="icon-facebook-rect"> yu5454</span>
+</a>
+
+                </section>
+            </footer>
+
+            <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'very-geek';
+    var disqus_identifier = 'http:\/\/very-geek.github.io\/insight\/emberconf-2016-opening-keynote-by-yehuda-katz-and-tom-dale\/';
+    var disqus_title = 'EmberConf 2016 开场演讲阅后感';
+    var disqus_url = 'http:\/\/very-geek.github.io\/insight\/emberconf-2016-opening-keynote-by-yehuda-katz-and-tom-dale\/';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+            <ul id="post-list" class="archive readmore">
+    <h3>推荐阅读</h3>
+    
+    
+        
+        <li>
+            <a href="http://very-geek.github.io/insight/emberconf-2016-opening-keynote-by-yehuda-katz-and-tom-dale/">EmberConf 2016 开场演讲阅后感<aside class="dates">Apr 30</aside></a>
+        </li>
+        
+   
+</ul>
+            <footer id="footer">
+    
+        <div id="social">
+
+	
+	
+    <a class="symbol" href="https://www.facebook.com/yu5454">
+        <i class="fa fa-facebook"></i>
+    </a>
+    
+    <a class="symbol" href="https://github.com/nightire">
+        <i class="fa fa-github"></i>
+    </a>
+    
+    <a class="symbol" href="http://stackoverflow.com/users/1582747/nightire">
+        <i class="fa fa-stackoverflow"></i>
+    </a>
+    
+    <a class="symbol" href="https://twitter.com/yu5454">
+        <i class="fa fa-twitter"></i>
+    </a>
+    
+    <a class="symbol" href="http://weibo.com/nightire">
+        <i class="fa fa-weibo"></i>
+    </a>
+    
+
+
+</div>
+
+    
+    <p class="small">
+    
+        © 版权所有 2016 太极客
+    
+    </p>
+</footer>
+
+        </section>
+
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script src="http://very-geek.github.io/js/main.js"></script>
+<script src="http://very-geek.github.io/js/highlight.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+
+
+
+
+    </body>
+</html>
