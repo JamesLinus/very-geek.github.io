@@ -1,0 +1,44 @@
+baseurl = "http://very-geek.github.io/"
+languageCode = "zh-cn"
+title = "太极客"
+theme = "cactus"
+googleAnalytics = ""
+disqusShortname = "very-geek"
+
+[params]
+  name = "Albert Yu"
+  description = "长夜有尽时，苦思无绝期"
+  bio = "Programmer - Designeer"
+  twitter = "yu5454"
+  enableRSS = true
+
+  customCSS = []
+  customJS  = []
+
+  home = "首页"
+  about = "关于"
+  subscribe = "订阅"
+  olderPosts = "前一篇"
+  newerPosts = "后一篇"
+  readMore = "推荐阅读"
+  copyright = "© 版权所有 2016 太极客"
+  aboutAuthor = "As a designeer, I hope you can prove me wrong."
+  tweet = "yu5454"
+  share = "yu5454"
+  title404 = "人生总会碰壁"
+  subtitle404 = "莫要使头硬磕"
+
+  iconFont = "font-awesome"
+    socialIconStyle = "circle"
+[social]
+  facebook = "https://www.facebook.com/yu5454"
+  github = "https://github.com/nightire"
+  stackoverflow = "http://stackoverflow.com/users/1582747/nightire"
+  twitter = "https://twitter.com/yu5454"
+  weibo = "http://weibo.com/nightire"
+  # rubychina = "https://ruby-china.org/nightire"
+  # segmentfault = "https://segmentfault.com/u/nightire"
+[taxonomies]
+  tag = "tags"
+  series = "series"
+  category = "categories"
