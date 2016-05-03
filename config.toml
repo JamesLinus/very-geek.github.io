@@ -6,9 +6,10 @@ googleAnalytics = ""
 disqusShortname = "very-geek"
 
 [params]
-  name = "Albert Yu"
+  name = "太极客"
   description = "长夜有尽时，苦思无绝期"
-  bio = "Programmer - Designeer"
+  bio = "Designer + Engineer = Designeer"
+  rss = true
   twitter = "yu5454"
   enableRSS = true
 

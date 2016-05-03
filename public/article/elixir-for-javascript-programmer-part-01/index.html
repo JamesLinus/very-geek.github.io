@@ -1,0 +1,288 @@
+    <!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="author" content="太极客">
+		<meta name="description" content="长夜有尽时，苦思无绝期">
+		<meta name="generator" content="Hugo 0.15" />
+		<title>给 JavaScript 程序员写的 Elixir 手册 一 &middot; 太极客</title>
+		<link rel="shortcut icon" href="http://very-geek.github.io/images/favicon.ico">
+		<link rel="stylesheet" href="http://very-geek.github.io/css/style.css">
+		<link rel="stylesheet" href="http://very-geek.github.io/css/highlight.css">
+		
+
+		
+		<link rel="stylesheet" href="http://very-geek.github.io/fontawesome/css/font-awesome.min.css">
+		
+
+		
+	</head>
+
+    <body>
+       <nav class="main-nav">
+	
+	
+		<a href='http://very-geek.github.io/'> <span class="arrow">←</span>首页</a>
+	
+
+	
+		<a href='http://very-geek.github.io/about'>关于</a>
+	
+
+	
+</nav>
+
+        <section id="wrapper">
+            <article class="post">
+                <header>
+                    <h1>给 JavaScript 程序员写的 Elixir 手册 一</h1>
+                    <h2 class="headline">
+                    May 4, 2016 
+                    <br>
+                    
+                    
+                        
+                            <a href="http://very-geek.github.io/tags/elixir">elixir</a>
+                        
+                    
+                    
+                    </h2>
+                </header>
+                <section id="post-body">
+                    
+
+<blockquote>
+<p>我是一名 JavaScript 程序员，这是写给自己的学习 Elixir 的心得体会。</p>
+</blockquote>
+
+<h2 id="想未曾之所想:167f08f7ac85a463feb318cdcdfbed5a">想未曾之所想</h2>
+
+<ul>
+<li><p>面向对象不是唯一的代码设计方法</p></li>
+
+<li><p>函数式编程语言可以不复杂或者不那么数学化</p></li>
+
+<li><p>编程的基石不是赋值，if 语句和 loop 循环</p></li>
+
+<li><p>并发不需要锁、信号量、monitor，及其他种种</p></li>
+
+<li><p>进程不一定非是昂贵的资源</p></li>
+
+<li><p>元编程不只是作用于语言本身的</p></li>
+
+<li><p>能用虽然是根本，但编程也应该有趣才好</p></li>
+</ul>
+
+<blockquote>
+<p>以上醒言摘自 Programming Elixir 1.2 by Dave Thomas</p>
+</blockquote>
+
+<h2 id="模式匹配-pattern-matching:167f08f7ac85a463feb318cdcdfbed5a">模式匹配（Pattern Matching）</h2>
+
+<pre><code class="language-elixir">iex(1)&gt; a = 1
+1
+iex(2)&gt; a + 2
+3
+</code></pre>
+
+<p>抛开语法细节先不谈，以上两句作为 JavaScript 程序员的我会这样来描述：</p>
+
+<blockquote>
+<p><em>JavaScript：</em> 把数字 <code>1</code> 赋值给变量 <code>a</code>，接着用变量 <code>a</code> 和数字 <code>2</code> 相加，求值结果为 <code>3</code></p>
+</blockquote>
+
+<p>这没有什么错，然而在 Elixir 的世界里的表述方法却是完全不同的：</p>
+
+<blockquote>
+<p><em>Elixir：</em> 首先 <code>=</code> 并不是赋值符号，它是一种推断，即：如果我能让左边的值等于右边的值，那么此推断为真。所以 <code>=</code> 被称为：<strong>匹配操作符</strong>。</p>
+</blockquote>
+
+<p>在这里，左边是一个变量（准确的说只是一个名称）而右边是一个正数字面量，所以 Elixir 通过<strong>把变量 <code>a</code> 绑定给数值 <code>1</code></strong>来让匹配操作为真。你可以说“这就是个赋值嘛！”，别急我们来看看下面的：</p>
+
+<pre><code class="language-elixir">iex(1)&gt; a = 1
+1
+iex(2)&gt; 1 = a
+1
+iex(3)&gt; 2 = a
+** (MatchError) no match of right hand side value: 1
+</code></pre>
+
+<blockquote>
+<p>同样的代码也可以在 JavaScript 环境里运行一下看看是什么结果。</p>
+</blockquote>
+
+<p>请留意第二行代码 <code>1 = a</code>，这又是一个匹配而且也是真。所以说模式匹配是无关等号两边左值右值的位置的，而赋值操作则不能随意调换。</p>
+
+<p>但是第三行 <code>2 = a</code> 就会抛出一个错误了，或许第二行的结果会让你误以为“赋值可以左右值互换”，而这个错误就非常明确的告诉你：Elixir 只会对等号左边的变量绑定值，在右边的时候变量会被它所绑定的值代换。这行代码等价于 <code>2 = 1</code>，所以才会引起错误。</p>
+
+<p>再来看一个例子：</p>
+
+<pre><code class="language-elixir">iex(1)&gt; list = [1, 2, 3]
+[1, 2, 3]
+</code></pre>
+
+<p>OK，不难理解。不过从现在开始要习惯这样来表述：**为使匹配为真，把变量 <code>list</code> 绑定为值 <code>[1, 2, 3]</code>。继续：</p>
+
+<pre><code class="language-elixir">iex(2)&gt; [x, y, z] = list
+[1, 2, 3]
+iex(3)&gt; x
+1
+iex(4)&gt; y
+2
+iex(5)&gt; z
+3
+</code></pre>
+
+<p>咦？这不就是解构（Destructure）吗？不错，道理一样。但请还是称其为模式匹配，因为模式匹配要比解构更加灵活、强大，且后面我们会看到语法上也还有细微的不同之处。另外上面的代码用我们刚学习的匹配方式来理解也是完全可行的，亲自试一下吧。</p>
+
+<p>模式匹配的规则是：模式（左值）和值（右值）仅在拥有相同的结构并且模式中的每一项都能匹配值中对应的项时，模式匹配表达式才为真。模式中的字面量值必须完全匹配对应的值，而变量则通过绑定对应值来完成匹配。例如：</p>
+
+<pre><code class="language-elixir">iex(1)&gt; list = [1, 2, [3, 4, 5]]
+[1, 2, [3, 4, 5]]
+iex(2)&gt; [x, y, z] = list
+[1, 2, [3, 4, 5]]
+iex(3)&gt; x
+1
+iex(4)&gt; y
+2
+iex(5)&gt; z
+[3, 4, 5]
+</code></pre>
+
+<p>以及：</p>
+
+<pre><code class="language-elixir">iex(1)&gt; list = [1, 2, 3]
+[1, 2, 3]
+iex(2)&gt; [x, 2, z] = list
+[1, 2, 3]
+iex(3)&gt; x
+1
+iex(4)&gt; z
+3
+</code></pre>
+
+<p>现在看到了吧？解构和模式匹配并非完全一样的。话说回来要是模式中的字面量值不能匹配右值的对应项又会怎样呢？</p>
+
+<pre><code class="language-elixir">iex(1)&gt; list = [1, 2, 3]
+[1, 2, 3]
+iex(2)&gt; [x, 1, z] = list
+** (MatchError) no match of right hand side value: [1, 2, 3]
+</code></pre>
+
+<p>匹配错误，没啥好说的。</p>
+
+<hr />
+
+<p>我们所体验过的模式匹配仅仅只是皮毛而已，模式匹配在 Elixir 的世界里是最最基础同时也是最最重要的概念。在以后的实践中，模式匹配还会展现出更丰富且强大的特性，不过以上已经涵盖了模式匹配最核心的要素，一定要烂熟于心变成一种本能才好。</p>
+
+                </section>
+            </article>
+            <footer id="post-meta" class="clearfix">
+                <a href="https://twitter.com/yu5454">
+                        <img class="avatar" src="http://very-geek.github.io/images/avatar.png">
+                        <div>
+                            <span class="dark">太极客</span>
+                            <span>As a designeer, I hope you can prove me wrong.</span>
+                        </div>
+                    </a>
+                <section id="sharing">
+                    <a class="twitter" href="https://twitter.com/intent/tweet?text=http%3a%2f%2fvery-geek.github.io%2farticle%2felixir-for-javascript-programmer-part-01%2f - %e7%bb%99%20JavaScript%20%e7%a8%8b%e5%ba%8f%e5%91%98%e5%86%99%e7%9a%84%20Elixir%20%e6%89%8b%e5%86%8c%20%e4%b8%80 by @yu5454"><span class="icon-twitter"> yu5454</span></a>
+
+<a class="facebook" href="#" onclick="
+    window.open(
+      'https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(location.href),
+      'facebook-share-dialog',
+      'width=626,height=436');
+    return false;"><span class="icon-facebook-rect"> yu5454</span>
+</a>
+
+                </section>
+            </footer>
+
+            <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'very-geek';
+    var disqus_identifier = 'http:\/\/very-geek.github.io\/article\/elixir-for-javascript-programmer-part-01\/';
+    var disqus_title = '给 JavaScript 程序员写的 Elixir 手册 一';
+    var disqus_url = 'http:\/\/very-geek.github.io\/article\/elixir-for-javascript-programmer-part-01\/';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+            <ul id="post-list" class="archive readmore">
+    <h3>推荐阅读</h3>
+    
+    
+        
+        <li>
+            <a href="http://very-geek.github.io/article/elixir-for-javascript-programmer-part-01/">给 JavaScript 程序员写的 Elixir 手册 一<aside class="dates">May 4</aside></a>
+        </li>
+        
+   
+    
+        
+        <li>
+            <a href="http://very-geek.github.io/insight/emberconf-2016-opening-keynote-by-yehuda-katz-and-tom-dale/">EmberConf 2016 开场演讲阅后感<aside class="dates">Apr 30</aside></a>
+        </li>
+        
+   
+</ul>
+            <footer id="footer">
+    
+        <div id="social">
+
+	
+	
+    <a class="symbol" href="https://www.facebook.com/yu5454">
+        <i class="fa fa-facebook"></i>
+    </a>
+    
+    <a class="symbol" href="https://github.com/nightire">
+        <i class="fa fa-github"></i>
+    </a>
+    
+    <a class="symbol" href="http://stackoverflow.com/users/1582747/nightire">
+        <i class="fa fa-stackoverflow"></i>
+    </a>
+    
+    <a class="symbol" href="https://twitter.com/yu5454">
+        <i class="fa fa-twitter"></i>
+    </a>
+    
+    <a class="symbol" href="http://weibo.com/nightire">
+        <i class="fa fa-weibo"></i>
+    </a>
+    
+
+
+</div>
+
+    
+    <p class="small">
+    
+        © 版权所有 2016 太极客
+    
+    </p>
+</footer>
+
+        </section>
+
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script src="http://very-geek.github.io/js/main.js"></script>
+<script src="http://very-geek.github.io/js/highlight.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+
+
+
+
+    </body>
+</html>

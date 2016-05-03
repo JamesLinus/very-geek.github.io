@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Elixir on 太极客</title>
+    <link>http://very-geek.github.io/tags/elixir/</link>
+    <description>Recent content in Elixir on 太极客</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Wed, 04 May 2016 00:00:00 +0800</lastBuildDate>
+    <atom:link href="http://very-geek.github.io/tags/elixir/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>给 JavaScript 程序员写的 Elixir 手册 一</title>
+      <link>http://very-geek.github.io/article/elixir-for-javascript-programmer-part-01/</link>
+      <pubDate>Wed, 04 May 2016 00:00:00 +0800</pubDate>
+      
+      <guid>http://very-geek.github.io/article/elixir-for-javascript-programmer-part-01/</guid>
+      <description>
+
+&lt;blockquote&gt;
+&lt;p&gt;我是一名 JavaScript 程序员，这是写给自己的学习 Elixir 的心得体会。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&#34;想未曾之所想:167f08f7ac85a463feb318cdcdfbed5a&#34;&gt;想未曾之所想&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;面向对象不是唯一的代码设计方法&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;函数式编程语言可以不复杂或者不那么数学化&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;编程的基石不是赋值，if 语句和 loop 循环&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;并发不需要锁、信号量、monitor，及其他种种&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;进程不一定非是昂贵的资源&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;元编程不只是作用于语言本身的&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;能用虽然是根本，但编程也应该有趣才好&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;以上醒言摘自 Programming Elixir 1.2 by Dave Thomas&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&#34;模式匹配-pattern-matching:167f08f7ac85a463feb318cdcdfbed5a&#34;&gt;模式匹配（Pattern Matching）&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;iex(1)&amp;gt; a = 1
+1
+iex(2)&amp;gt; a + 2
+3
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;抛开语法细节先不谈，以上两句作为 JavaScript 程序员的我会这样来描述：&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;&lt;em&gt;JavaScript：&lt;/em&gt; 把数字 &lt;code&gt;1&lt;/code&gt; 赋值给变量 &lt;code&gt;a&lt;/code&gt;，接着用变量 &lt;code&gt;a&lt;/code&gt; 和数字 &lt;code&gt;2&lt;/code&gt; 相加，求值结果为 &lt;code&gt;3&lt;/code&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;这没有什么错，然而在 Elixir 的世界里的表述方法却是完全不同的：&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;&lt;em&gt;Elixir：&lt;/em&gt; 首先 &lt;code&gt;=&lt;/code&gt; 并不是赋值符号，它是一种推断，即：如果我能让左边的值等于右边的值，那么此推断为真。所以 &lt;code&gt;=&lt;/code&gt; 被称为：&lt;strong&gt;匹配操作符&lt;/strong&gt;。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;在这里，左边是一个变量（准确的说只是一个名称）而右边是一个正数字面量，所以 Elixir 通过&lt;strong&gt;把变量 &lt;code&gt;a&lt;/code&gt; 绑定给数值 &lt;code&gt;1&lt;/code&gt;&lt;/strong&gt;来让匹配操作为真。你可以说“这就是个赋值嘛！”，别急我们来看看下面的：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;iex(1)&amp;gt; a = 1
+1
+iex(2)&amp;gt; 1 = a
+1
+iex(3)&amp;gt; 2 = a
+** (MatchError) no match of right hand side value: 1
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;同样的代码也可以在 JavaScript 环境里运行一下看看是什么结果。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;请留意第二行代码 &lt;code&gt;1 = a&lt;/code&gt;，这又是一个匹配而且也是真。所以说模式匹配是无关等号两边左值右值的位置的，而赋值操作则不能随意调换。&lt;/p&gt;
+
+&lt;p&gt;但是第三行 &lt;code&gt;2 = a&lt;/code&gt; 就会抛出一个错误了，或许第二行的结果会让你误以为“赋值可以左右值互换”，而这个错误就非常明确的告诉你：Elixir 只会对等号左边的变量绑定值，在右边的时候变量会被它所绑定的值代换。这行代码等价于 &lt;code&gt;2 = 1&lt;/code&gt;，所以才会引起错误。&lt;/p&gt;
+
+&lt;p&gt;再来看一个例子：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;iex(1)&amp;gt; list = [1, 2, 3]
+[1, 2, 3]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;OK，不难理解。不过从现在开始要习惯这样来表述：**为使匹配为真，把变量 &lt;code&gt;list&lt;/code&gt; 绑定为值 &lt;code&gt;[1, 2, 3]&lt;/code&gt;。继续：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;iex(2)&amp;gt; [x, y, z] = list
+[1, 2, 3]
+iex(3)&amp;gt; x
+1
+iex(4)&amp;gt; y
+2
+iex(5)&amp;gt; z
+3
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;咦？这不就是解构（Destructure）吗？不错，道理一样。但请还是称其为模式匹配，因为模式匹配要比解构更加灵活、强大，且后面我们会看到语法上也还有细微的不同之处。另外上面的代码用我们刚学习的匹配方式来理解也是完全可行的，亲自试一下吧。&lt;/p&gt;
+
+&lt;p&gt;模式匹配的规则是：模式（左值）和值（右值）仅在拥有相同的结构并且模式中的每一项都能匹配值中对应的项时，模式匹配表达式才为真。模式中的字面量值必须完全匹配对应的值，而变量则通过绑定对应值来完成匹配。例如：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;iex(1)&amp;gt; list = [1, 2, [3, 4, 5]]
+[1, 2, [3, 4, 5]]
+iex(2)&amp;gt; [x, y, z] = list
+[1, 2, [3, 4, 5]]
+iex(3)&amp;gt; x
+1
+iex(4)&amp;gt; y
+2
+iex(5)&amp;gt; z
+[3, 4, 5]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;以及：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;iex(1)&amp;gt; list = [1, 2, 3]
+[1, 2, 3]
+iex(2)&amp;gt; [x, 2, z] = list
+[1, 2, 3]
+iex(3)&amp;gt; x
+1
+iex(4)&amp;gt; z
+3
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;现在看到了吧？解构和模式匹配并非完全一样的。话说回来要是模式中的字面量值不能匹配右值的对应项又会怎样呢？&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;iex(1)&amp;gt; list = [1, 2, 3]
+[1, 2, 3]
+iex(2)&amp;gt; [x, 1, z] = list
+** (MatchError) no match of right hand side value: [1, 2, 3]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;匹配错误，没啥好说的。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;我们所体验过的模式匹配仅仅只是皮毛而已，模式匹配在 Elixir 的世界里是最最基础同时也是最最重要的概念。在以后的实践中，模式匹配还会展现出更丰富且强大的特性，不过以上已经涵盖了模式匹配最核心的要素，一定要烂熟于心变成一种本能才好。&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>
