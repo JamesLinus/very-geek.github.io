@@ -10,7 +10,7 @@
     <atom:link href="http://very-geek.github.io/tags/elixir/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
-      <title>给 JavaScript 程序员写的 Elixir 手册 一</title>
+      <title>JavaScript 程序员眼中的 Elixir （一）</title>
       <link>http://very-geek.github.io/article/elixir-for-javascript-programmer-part-01/</link>
       <pubDate>Wed, 04 May 2016 00:00:00 +0800</pubDate>
       
@@ -63,7 +63,7 @@ iex(2)&amp;gt; a + 2
 &lt;p&gt;&lt;em&gt;Elixir：&lt;/em&gt; 首先 &lt;code&gt;=&lt;/code&gt; 并不是赋值符号，它是一种推断，即：如果我能让左边的值等于右边的值，那么此推断为真。所以 &lt;code&gt;=&lt;/code&gt; 被称为：&lt;strong&gt;匹配操作符&lt;/strong&gt;。&lt;/p&gt;
 &lt;/blockquote&gt;
 
-&lt;p&gt;在这里，左边是一个变量（准确的说只是一个名称）而右边是一个正数字面量，所以 Elixir 通过&lt;strong&gt;把变量 &lt;code&gt;a&lt;/code&gt; 绑定给数值 &lt;code&gt;1&lt;/code&gt;&lt;/strong&gt;来让匹配操作为真。你可以说“这就是个赋值嘛！”，别急我们来看看下面的：&lt;/p&gt;
+&lt;p&gt;在这里，左边是一个变量（准确的说只是一个名称）而右边是一个整数字面量，所以 Elixir 通过&lt;strong&gt;把变量 &lt;code&gt;a&lt;/code&gt; 绑定给数值 &lt;code&gt;1&lt;/code&gt;&lt;/strong&gt;来让匹配操作为真。你可以说“这就是个赋值嘛！”，别急我们来看看下面的：&lt;/p&gt;
 
 &lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;iex(1)&amp;gt; a = 1
 1
@@ -87,7 +87,7 @@ iex(3)&amp;gt; 2 = a
 [1, 2, 3]
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;OK，不难理解。不过从现在开始要习惯这样来表述：**为使匹配为真，把变量 &lt;code&gt;list&lt;/code&gt; 绑定为值 &lt;code&gt;[1, 2, 3]&lt;/code&gt;。继续：&lt;/p&gt;
+&lt;p&gt;OK，不难理解。不过从现在开始要习惯这样来表述：&lt;strong&gt;为使匹配为真，把变量 &lt;code&gt;list&lt;/code&gt; 绑定为值 &lt;code&gt;[1, 2, 3]&lt;/code&gt;&lt;/strong&gt;。继续：&lt;/p&gt;
 
 &lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;iex(2)&amp;gt; [x, y, z] = list
 [1, 2, 3]
@@ -101,7 +101,7 @@ iex(5)&amp;gt; z
 
 &lt;p&gt;咦？这不就是解构（Destructure）吗？不错，道理一样。但请还是称其为模式匹配，因为模式匹配要比解构更加灵活、强大，且后面我们会看到语法上也还有细微的不同之处。另外上面的代码用我们刚学习的匹配方式来理解也是完全可行的，亲自试一下吧。&lt;/p&gt;
 
-&lt;p&gt;模式匹配的规则是：模式（左值）和值（右值）仅在拥有相同的结构并且模式中的每一项都能匹配值中对应的项时，模式匹配表达式才为真。模式中的字面量值必须完全匹配对应的值，而变量则通过绑定对应值来完成匹配。例如：&lt;/p&gt;
+&lt;p&gt;模式匹配的规则是：&lt;strong&gt;模式（左值）和值（右值）仅在拥有相同的结构并且模式中的每一项都能匹配值中对应的项时，模式匹配表达式才为真。&lt;/strong&gt;模式中的字面量值必须完全匹配对应的值，而变量则通过绑定对应值来完成匹配。例如：&lt;/p&gt;
 
 &lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;iex(1)&amp;gt; list = [1, 2, [3, 4, 5]]
 [1, 2, [3, 4, 5]]
@@ -137,9 +137,72 @@ iex(2)&amp;gt; [x, 1, z] = list
 
 &lt;p&gt;匹配错误，没啥好说的。&lt;/p&gt;
 
+&lt;h2 id=&#34;忽略不需要的匹配项:167f08f7ac85a463feb318cdcdfbed5a&#34;&gt;忽略不需要的匹配项&lt;/h2&gt;
+
+&lt;p&gt;JavaScript 的解构对于左值的结构是没有约束的，可以完全和右值的结构相等也可以不等，从这个角度来说我反而觉得还是不要用解构与模式匹配对比为好，因为模式匹配的第一个先决条件就是结构相等，其次才是值相等。&lt;/p&gt;
+
+&lt;p&gt;因为模式匹配在左值含有变量的时候会为变量做对应右值的绑定，所以我们才认为它与结构有相似之处。然而模式匹配对结构有约束，所以对不想要匹配的值就得有忽略它的办法。&lt;/p&gt;
+
+&lt;p&gt;Elixir 允许使用 &lt;code&gt;_&lt;/code&gt; 忽略不需要匹配的值，&lt;code&gt;_&lt;/code&gt; 类似变量但是在匹配后会立刻丢弃绑定的值：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;iex(1)&amp;gt; [1, _, _] = [1, 2, 3]
+[1, 2, 3]
+iex(2)&amp;gt; [name, _] = [&amp;quot;doggy&amp;quot;, 5]
+[&amp;quot;doggy&amp;quot;, 5]
+iex(3)&amp;gt; name
+&amp;quot;doggy&amp;quot;
+iex(4)&amp;gt; _
+** (CompileError) iex:4: unbound variable _
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;如果你尝试访问 &lt;code&gt;_&lt;/code&gt;，你会看到它总是 &lt;code&gt;unbound variable&lt;/code&gt;（未绑定变量）。&lt;/p&gt;
+
+&lt;h2 id=&#34;不可变的数据绑定:167f08f7ac85a463feb318cdcdfbed5a&#34;&gt;不可变的数据绑定&lt;/h2&gt;
+
+&lt;p&gt;考察下面的例子：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;iex(1)&amp;gt; foo = 1
+1
+iex(2)&amp;gt; [1, foo, 3] = [1, 2, 3]
+[1, 2, 3]
+iex(3)&amp;gt; foo
+2
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;试想：如果第二行的模式匹配中我希望 &lt;code&gt;foo&lt;/code&gt; 是不变的，也就是以 &lt;code&gt;1&lt;/code&gt; 的值来进行匹配而不是重新绑定为 &lt;code&gt;2&lt;/code&gt; 的话要如何做呢？&lt;/p&gt;
+
+&lt;p&gt;这在 JavaScript 中是“不存在”的问题，除非我硬要这么写：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-javascript&#34;&gt;{
+  var foo = 1
+  const [, foo, ] = [1, 2, 3]
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;如果第一句的声明换成 &lt;code&gt;let&lt;/code&gt; 或是 &lt;code&gt;const&lt;/code&gt; 就会抛出异常，具体的原因可以看一下 &lt;a href=&#34;http://babeljs.io/repl/#?evaluate=true&amp;amp;lineWrap=false&amp;amp;presets=es2015&amp;amp;code=%7B%0A%20%20var%20foo%20%3D%201%0A%20%20const%20%5B%2C%20foo%2C%20%5D%20%3D%20%5B1%2C%202%2C%203%5D%0A%7D&#34;&gt;Babel 的转换结果。&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;若是我们要在 Elixir 中强制保留既存的绑定结果，那么就需要在模式匹配的时候使用 &lt;code&gt;^&lt;/code&gt; 操作符，我把它叫做：&lt;strong&gt;图钉操作符（pin operator）&lt;/strong&gt;，顾名思义，就是把前面绑定的结果“摁住”固定下来：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;iex(1)&amp;gt; foo = 1
+1
+iex(2)&amp;gt; [1, ^foo, 3] = [1, 2, 3]
+** (MatchError) no match of right hand side value: [1, 2, 3]
+
+iex(2)&amp;gt; foo
+1
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;值得注意的是，Elixir 的“长辈” Erlang 是不允许重新绑定变量的，所以图钉操作符是 Elixir 所独有的特性。一开始我曾经疑惑：&lt;em&gt;这一特性岂不是打破了函数式编程语言不可变数据的天性吗？&lt;/em&gt; 不过事实上我是杞人忧天了，Elixir 里的数据依旧是不可变的，这类特性可以视作是“隐秘”的语法糖，为的是让代码写起来更加自然流畅，提高阅读性。&lt;/p&gt;
+
+&lt;p&gt;我想等到专门探讨不可变数据结构的时候再来回顾这些细节，不过&lt;a href=&#34;http://stackoverflow.com/questions/27971357/what-is-the-pin-operator-for-and-are-elixir-variables-mutable&#34;&gt;这一篇 StackOverflow 的问答&lt;/a&gt;已经解释的很清楚了，值得一读。&lt;/p&gt;
+
 &lt;hr /&gt;
 
-&lt;p&gt;我们所体验过的模式匹配仅仅只是皮毛而已，模式匹配在 Elixir 的世界里是最最基础同时也是最最重要的概念。在以后的实践中，模式匹配还会展现出更丰富且强大的特性，不过以上已经涵盖了模式匹配最核心的要素，一定要烂熟于心变成一种本能才好。&lt;/p&gt;
+&lt;p&gt;第一篇直接跳过了基本的语法、类型及操作符，是因为 Elixir 在这些方面没有什么“意外”的东西，它的语法简洁易懂，实现了所有现代高级语言所共通的部分。而且官方的入门教程已经足够细致，我就没必要浪费文墨了。&lt;/p&gt;
+
+&lt;p&gt;在我看来，对于熟练掌握至少一门高级语言（如我是 JavaScript）的程序员来说，初识 Elixir 的首要任务就是理解和习惯模式匹配，特别是没有函数式编程语言的经验的话这点尤其重要。&lt;/p&gt;
+
+&lt;p&gt;下一篇我打算谈谈集合相关的基础知识，因为对于实战来说，集合是最常用的数据结构了。在使用 JavaScript 语言的过程中，绝大部分时间都是在与函数和各种集合打交道，所以此二者是我关注的重点。&lt;/p&gt;
 </description>
     </item>
     

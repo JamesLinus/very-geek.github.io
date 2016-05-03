@@ -7,7 +7,7 @@
 		<meta name="author" content="太极客">
 		<meta name="description" content="长夜有尽时，苦思无绝期">
 		<meta name="generator" content="Hugo 0.15" />
-		<title>给 JavaScript 程序员写的 Elixir 手册 一 &middot; 太极客</title>
+		<title>JavaScript 程序员眼中的 Elixir （一） &middot; 太极客</title>
 		<link rel="shortcut icon" href="http://very-geek.github.io/images/favicon.ico">
 		<link rel="stylesheet" href="http://very-geek.github.io/css/style.css">
 		<link rel="stylesheet" href="http://very-geek.github.io/css/highlight.css">
@@ -41,7 +41,7 @@
         <section id="wrapper">
             <article class="post">
                 <header>
-                    <h1>给 JavaScript 程序员写的 Elixir 手册 一</h1>
+                    <h1>JavaScript 程序员眼中的 Elixir （一）</h1>
                     <h2 class="headline">
                     May 4, 2016 
                     <br>
@@ -103,7 +103,7 @@ iex(2)&gt; a + 2
 <p><em>Elixir：</em> 首先 <code>=</code> 并不是赋值符号，它是一种推断，即：如果我能让左边的值等于右边的值，那么此推断为真。所以 <code>=</code> 被称为：<strong>匹配操作符</strong>。</p>
 </blockquote>
 
-<p>在这里，左边是一个变量（准确的说只是一个名称）而右边是一个正数字面量，所以 Elixir 通过<strong>把变量 <code>a</code> 绑定给数值 <code>1</code></strong>来让匹配操作为真。你可以说“这就是个赋值嘛！”，别急我们来看看下面的：</p>
+<p>在这里，左边是一个变量（准确的说只是一个名称）而右边是一个整数字面量，所以 Elixir 通过<strong>把变量 <code>a</code> 绑定给数值 <code>1</code></strong>来让匹配操作为真。你可以说“这就是个赋值嘛！”，别急我们来看看下面的：</p>
 
 <pre><code class="language-elixir">iex(1)&gt; a = 1
 1
@@ -127,7 +127,7 @@ iex(3)&gt; 2 = a
 [1, 2, 3]
 </code></pre>
 
-<p>OK，不难理解。不过从现在开始要习惯这样来表述：**为使匹配为真，把变量 <code>list</code> 绑定为值 <code>[1, 2, 3]</code>。继续：</p>
+<p>OK，不难理解。不过从现在开始要习惯这样来表述：<strong>为使匹配为真，把变量 <code>list</code> 绑定为值 <code>[1, 2, 3]</code></strong>。继续：</p>
 
 <pre><code class="language-elixir">iex(2)&gt; [x, y, z] = list
 [1, 2, 3]
@@ -141,7 +141,7 @@ iex(5)&gt; z
 
 <p>咦？这不就是解构（Destructure）吗？不错，道理一样。但请还是称其为模式匹配，因为模式匹配要比解构更加灵活、强大，且后面我们会看到语法上也还有细微的不同之处。另外上面的代码用我们刚学习的匹配方式来理解也是完全可行的，亲自试一下吧。</p>
 
-<p>模式匹配的规则是：模式（左值）和值（右值）仅在拥有相同的结构并且模式中的每一项都能匹配值中对应的项时，模式匹配表达式才为真。模式中的字面量值必须完全匹配对应的值，而变量则通过绑定对应值来完成匹配。例如：</p>
+<p>模式匹配的规则是：<strong>模式（左值）和值（右值）仅在拥有相同的结构并且模式中的每一项都能匹配值中对应的项时，模式匹配表达式才为真。</strong>模式中的字面量值必须完全匹配对应的值，而变量则通过绑定对应值来完成匹配。例如：</p>
 
 <pre><code class="language-elixir">iex(1)&gt; list = [1, 2, [3, 4, 5]]
 [1, 2, [3, 4, 5]]
@@ -177,9 +177,72 @@ iex(2)&gt; [x, 1, z] = list
 
 <p>匹配错误，没啥好说的。</p>
 
+<h2 id="忽略不需要的匹配项:167f08f7ac85a463feb318cdcdfbed5a">忽略不需要的匹配项</h2>
+
+<p>JavaScript 的解构对于左值的结构是没有约束的，可以完全和右值的结构相等也可以不等，从这个角度来说我反而觉得还是不要用解构与模式匹配对比为好，因为模式匹配的第一个先决条件就是结构相等，其次才是值相等。</p>
+
+<p>因为模式匹配在左值含有变量的时候会为变量做对应右值的绑定，所以我们才认为它与结构有相似之处。然而模式匹配对结构有约束，所以对不想要匹配的值就得有忽略它的办法。</p>
+
+<p>Elixir 允许使用 <code>_</code> 忽略不需要匹配的值，<code>_</code> 类似变量但是在匹配后会立刻丢弃绑定的值：</p>
+
+<pre><code class="language-elixir">iex(1)&gt; [1, _, _] = [1, 2, 3]
+[1, 2, 3]
+iex(2)&gt; [name, _] = [&quot;doggy&quot;, 5]
+[&quot;doggy&quot;, 5]
+iex(3)&gt; name
+&quot;doggy&quot;
+iex(4)&gt; _
+** (CompileError) iex:4: unbound variable _
+</code></pre>
+
+<p>如果你尝试访问 <code>_</code>，你会看到它总是 <code>unbound variable</code>（未绑定变量）。</p>
+
+<h2 id="不可变的数据绑定:167f08f7ac85a463feb318cdcdfbed5a">不可变的数据绑定</h2>
+
+<p>考察下面的例子：</p>
+
+<pre><code class="language-elixir">iex(1)&gt; foo = 1
+1
+iex(2)&gt; [1, foo, 3] = [1, 2, 3]
+[1, 2, 3]
+iex(3)&gt; foo
+2
+</code></pre>
+
+<p>试想：如果第二行的模式匹配中我希望 <code>foo</code> 是不变的，也就是以 <code>1</code> 的值来进行匹配而不是重新绑定为 <code>2</code> 的话要如何做呢？</p>
+
+<p>这在 JavaScript 中是“不存在”的问题，除非我硬要这么写：</p>
+
+<pre><code class="language-javascript">{
+  var foo = 1
+  const [, foo, ] = [1, 2, 3]
+}
+</code></pre>
+
+<p>如果第一句的声明换成 <code>let</code> 或是 <code>const</code> 就会抛出异常，具体的原因可以看一下 <a href="http://babeljs.io/repl/#?evaluate=true&amp;lineWrap=false&amp;presets=es2015&amp;code=%7B%0A%20%20var%20foo%20%3D%201%0A%20%20const%20%5B%2C%20foo%2C%20%5D%20%3D%20%5B1%2C%202%2C%203%5D%0A%7D">Babel 的转换结果。</a></p>
+
+<p>若是我们要在 Elixir 中强制保留既存的绑定结果，那么就需要在模式匹配的时候使用 <code>^</code> 操作符，我把它叫做：<strong>图钉操作符（pin operator）</strong>，顾名思义，就是把前面绑定的结果“摁住”固定下来：</p>
+
+<pre><code class="language-elixir">iex(1)&gt; foo = 1
+1
+iex(2)&gt; [1, ^foo, 3] = [1, 2, 3]
+** (MatchError) no match of right hand side value: [1, 2, 3]
+
+iex(2)&gt; foo
+1
+</code></pre>
+
+<p>值得注意的是，Elixir 的“长辈” Erlang 是不允许重新绑定变量的，所以图钉操作符是 Elixir 所独有的特性。一开始我曾经疑惑：<em>这一特性岂不是打破了函数式编程语言不可变数据的天性吗？</em> 不过事实上我是杞人忧天了，Elixir 里的数据依旧是不可变的，这类特性可以视作是“隐秘”的语法糖，为的是让代码写起来更加自然流畅，提高阅读性。</p>
+
+<p>我想等到专门探讨不可变数据结构的时候再来回顾这些细节，不过<a href="http://stackoverflow.com/questions/27971357/what-is-the-pin-operator-for-and-are-elixir-variables-mutable">这一篇 StackOverflow 的问答</a>已经解释的很清楚了，值得一读。</p>
+
 <hr />
 
-<p>我们所体验过的模式匹配仅仅只是皮毛而已，模式匹配在 Elixir 的世界里是最最基础同时也是最最重要的概念。在以后的实践中，模式匹配还会展现出更丰富且强大的特性，不过以上已经涵盖了模式匹配最核心的要素，一定要烂熟于心变成一种本能才好。</p>
+<p>第一篇直接跳过了基本的语法、类型及操作符，是因为 Elixir 在这些方面没有什么“意外”的东西，它的语法简洁易懂，实现了所有现代高级语言所共通的部分。而且官方的入门教程已经足够细致，我就没必要浪费文墨了。</p>
+
+<p>在我看来，对于熟练掌握至少一门高级语言（如我是 JavaScript）的程序员来说，初识 Elixir 的首要任务就是理解和习惯模式匹配，特别是没有函数式编程语言的经验的话这点尤其重要。</p>
+
+<p>下一篇我打算谈谈集合相关的基础知识，因为对于实战来说，集合是最常用的数据结构了。在使用 JavaScript 语言的过程中，绝大部分时间都是在与函数和各种集合打交道，所以此二者是我关注的重点。</p>
 
                 </section>
             </article>
@@ -192,7 +255,7 @@ iex(2)&gt; [x, 1, z] = list
                         </div>
                     </a>
                 <section id="sharing">
-                    <a class="twitter" href="https://twitter.com/intent/tweet?text=http%3a%2f%2fvery-geek.github.io%2farticle%2felixir-for-javascript-programmer-part-01%2f - %e7%bb%99%20JavaScript%20%e7%a8%8b%e5%ba%8f%e5%91%98%e5%86%99%e7%9a%84%20Elixir%20%e6%89%8b%e5%86%8c%20%e4%b8%80 by @yu5454"><span class="icon-twitter"> yu5454</span></a>
+                    <a class="twitter" href="https://twitter.com/intent/tweet?text=http%3a%2f%2fvery-geek.github.io%2farticle%2felixir-for-javascript-programmer-part-01%2f - JavaScript%20%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9c%bc%e4%b8%ad%e7%9a%84%20Elixir%20%ef%bc%88%e4%b8%80%ef%bc%89 by @yu5454"><span class="icon-twitter"> yu5454</span></a>
 
 <a class="facebook" href="#" onclick="
     window.open(
@@ -209,7 +272,7 @@ iex(2)&gt; [x, 1, z] = list
 <script type="text/javascript">
     var disqus_shortname = 'very-geek';
     var disqus_identifier = 'http:\/\/very-geek.github.io\/article\/elixir-for-javascript-programmer-part-01\/';
-    var disqus_title = '给 JavaScript 程序员写的 Elixir 手册 一';
+    var disqus_title = 'JavaScript 程序员眼中的 Elixir （一）';
     var disqus_url = 'http:\/\/very-geek.github.io\/article\/elixir-for-javascript-programmer-part-01\/';
 
     (function() {
@@ -227,7 +290,7 @@ iex(2)&gt; [x, 1, z] = list
     
         
         <li>
-            <a href="http://very-geek.github.io/article/elixir-for-javascript-programmer-part-01/">给 JavaScript 程序员写的 Elixir 手册 一<aside class="dates">May 4</aside></a>
+            <a href="http://very-geek.github.io/article/elixir-for-javascript-programmer-part-01/">JavaScript 程序员眼中的 Elixir （一）<aside class="dates">May 4</aside></a>
         </li>
         
    
