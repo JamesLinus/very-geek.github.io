@@ -4,7 +4,7 @@ date = "2016-05-04T00:00:00+08:00"
 description = ""
 isCJKLanguage = true
 tags = ["elixir"]
-title = "JavaScript 程序员眼中的 Elixir （一）"
+title = "JavaScript 程序员眼中的 Elixir：模式匹配"
 +++
 
 > 我是一名 JavaScript 程序员，这是写给自己的学习 Elixir 的心得体会。
