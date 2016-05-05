@@ -6,11 +6,251 @@
     <description>Recent content in Articles on 太极客</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Wed, 04 May 2016 00:00:00 +0800</lastBuildDate>
+    <lastBuildDate>Thu, 05 May 2016 00:00:00 +0800</lastBuildDate>
     <atom:link href="http://very-geek.github.io/article/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
-      <title>JavaScript 程序员眼中的 Elixir （一）</title>
+      <title>JavaScript 程序员眼中的 Elixir：集合</title>
+      <link>http://very-geek.github.io/article/elixir-for-javascript-programmer-part-02/</link>
+      <pubDate>Thu, 05 May 2016 00:00:00 +0800</pubDate>
+      
+      <guid>http://very-geek.github.io/article/elixir-for-javascript-programmer-part-02/</guid>
+      <description>
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;iex(1)&amp;gt; [1, :foo, 3.14, &amp;quot;bar&amp;quot;, {1, 2, 3}]
+[1, :foo, 3.14, &amp;quot;bar&amp;quot;, {1, 2, 3}]
+
+iex(2)&amp;gt; {1, :foo, 3.14, &amp;quot;bar&amp;quot;, [1, 2, 3]}
+{1, :foo, 3.14, &amp;quot;bar&amp;quot;, [1, 2, 3]}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;请问看过上述代码之后是何感想？我第一次看呢感觉就是：晕～&lt;/p&gt;
+
+&lt;p&gt;那换个问题，上面两种集合哪个接近 JavaScript 里的数组（Array）？从符号上看应该是第一种：列表（List），可实际上最接近的是第二种：元组（Tuple），但是在 Elixir 中我们却不太会用在 JavaScript 中使用数组那样去使用元组。&lt;/p&gt;
+
+&lt;h2 id=&#34;元组-tuple:09efefb5582c071e5bc0e8d88fb3cabd&#34;&gt;元组（Tuple）&lt;/h2&gt;
+
+&lt;p&gt;元组是有序的数值集合，并且它是在内存中连续存储这些数值的，这就意味着通过下标（也是从 0 开始）访问数值以及获得元组的长度这样的操作是很快的。&lt;/p&gt;
+
+&lt;p&gt;典型的 Elixir 程序里一般不太会用元组来表示大量数据集合，有三五个就了不起啦～当需要表示更多的数据的时候会倾向于选择其它的集合类型——JavaScript 里那是没得挑，要么就自己去实现好了。原因？在我看来可能是因为元组并没有实现 &lt;code&gt;Enumerable&lt;/code&gt; 协议的缘故，这个不急我们后面会讲。&lt;/p&gt;
+
+&lt;p&gt;Elixir 用于操作元组的函数并不多，翻翻 API 文档也就十分钟全部看完，不过有几个方法是在 &lt;code&gt;Kernel&lt;/code&gt; 模块里的，要注意别漏了。它们分别是：&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;Kernel.elem/2&lt;/code&gt;，&lt;code&gt;Kernel.is_tuple/1&lt;/code&gt;，&lt;code&gt;Kernel.put_elem/3&lt;/code&gt;，以及 &lt;code&gt;Kernel.tuple_size/1&lt;/code&gt;。&lt;/p&gt;
+
+&lt;p&gt;Elixir 中有一个非常重要的“习俗”：让函数返回元组，且当没有错误的时候，元组的第一个值是原子 &lt;code&gt;:ok&lt;/code&gt;，这个习惯特别像 Node.js 的 error first callback，但在 Elixir 配合模式匹配则更加普遍和强大。下面就是一个常见的例子：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;iex(1)&amp;gt; File.open(&amp;quot;config.toml&amp;quot;)
+{:ok, #PID&amp;lt;0.60.0&amp;gt;}
+iex(2)&amp;gt; File.open(&amp;quot;config.yaml&amp;quot;)
+{:error, :enoent}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;关于这个以后还要深入地说，现在还是把焦点集中在集合上面吧。&lt;/p&gt;
+
+&lt;h2 id=&#34;列表-list:09efefb5582c071e5bc0e8d88fb3cabd&#34;&gt;列表（List）&lt;/h2&gt;
+
+&lt;p&gt;由于写法完全一致所以列表太容易被看作是 JavaScript 数组了，可是相比元组来说列表与数组的差异就更大了。&lt;/p&gt;
+
+&lt;p&gt;首先列表是链表集合而不是线性表集合，列表要么就是空的，要么就是由头（head）和尾（tail）组成：头保存一个值，尾本身又是一个列表。这是一种递归式的结构定义，而它正是大多数 Elixir 程序的核心。&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;JavaScript 的数组是线性表集合吗？JavaScript 是动态语言，这意味着数组的存储方式也是可以动态规划的。事实上，不同的引擎对此会有不同的处理方式，因此很难一概而论。大体上我们认为 JavaScript 数组是线性的，因而也会有很多文章教程来探讨在 JavaScript 中创建自己的链表数据结构。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;这种结构使得列表利于遍历但不利于随机读取（比如获取列表中第 &lt;em&gt;n&lt;/em&gt; 个元素总是要先扫描前面的 &lt;em&gt;n-1&lt;/em&gt; 个元素）。不过获取列表的头然后提取列表的尾则总是高效的。&lt;/p&gt;
+
+&lt;p&gt;列表有一种特性最值得牢记：对于不可变数据结构来说，想要修改它就意味着要先复制一份新的；然而由于列表是头尾结合的递归结构，要想去掉列表的头就不需要复制列表本身，只需要返回列表尾的指针就可以了。这种特性被广泛应用在列表的遍历与递归操作中。&lt;/p&gt;
+
+&lt;p&gt;列表支持下面的操作符（实际上都是 &lt;code&gt;Kernel&lt;/code&gt; 模块下的函数／宏）：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;iex(1)&amp;gt; [1, 2, 3] ++ [4, 5, 6]
+[1, 2, 3, 4, 5, 6]
+iex(2)&amp;gt; [1, 1, 2, 3, 3, 4] -- [2, 3, 4]
+[1, 1, 3]
+iex(3)&amp;gt; 1 in [1, 2, 3]
+true
+iex(4)&amp;gt; 0 in [1, 2, 3]
+false
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;列表模块里的函数也比元组要多得多，不过在实践中建议优先选择 &lt;code&gt;Enum&lt;/code&gt; 模块下的函数来操作列表。另外 &lt;code&gt;Kernel.hd/1&lt;/code&gt; 与 &lt;code&gt;Kernel.tl/1&lt;/code&gt; 分别用来取列表的头和尾。&lt;/p&gt;
+
+&lt;p&gt;下面是一个有趣的特性叫做字符列表（Char List），目前仅作了解即可。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;iex(1)&amp;gt; [104, 101, 108, 108, 111]
+&#39;hello&#39;
+iex(2)&amp;gt; &#39;hello&#39; == &amp;quot;hello&amp;quot;
+false
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;关键字列表-keyword-list:09efefb5582c071e5bc0e8d88fb3cabd&#34;&gt;关键字列表（Keyword List）&lt;/h2&gt;
+
+&lt;p&gt;虽然名字里还有列表二字，但关键字列表却像 JavaScript 对象字面量那样是键值对形式的数据集合。既然如此为啥还非要算作列表呢？看：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;iex(1)&amp;gt; [name: &amp;quot;nightire&amp;quot;, age: 35] = [{:name, &amp;quot;nightire&amp;quot;}, {:age, 35}]
+[name: &amp;quot;nightire&amp;quot;, age: 35]
+iex(2)&amp;gt; [name: &amp;quot;nightire&amp;quot;, age: 35] == [{:name, &amp;quot;nightire&amp;quot;}, {:age, 35}]
+true
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;原来关键字列表就是一个二元元组的列表，每一个元组的第一个元素必须是原子（Atom），第二个元素可以是其它任何值，以此来代表一对关联数据结构。&lt;/p&gt;
+
+&lt;p&gt;关键字列表的重要性源自于它自身的三大特点：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;键必须是原子&lt;/li&gt;
+&lt;li&gt;键是有序的，遵照定义时的顺序&lt;/li&gt;
+&lt;li&gt;键可以给定多次&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;下面是一些例子：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;iex(1)&amp;gt; person = [name: &amp;quot;nightire&amp;quot;, age: 35]
+[name: &amp;quot;nightire&amp;quot;, age: 35]
+iex(2)&amp;gt; person[:name]
+&amp;quot;nightire&amp;quot;
+iex(3)&amp;gt; person[:age]
+35
+
+iex(4)&amp;gt; nightire = person ++ [likes: [&amp;quot;music&amp;quot;, &amp;quot;programming&amp;quot;]]
+[name: &amp;quot;nightire&amp;quot;, age: 35, likes: [&amp;quot;music&amp;quot;, &amp;quot;programming&amp;quot;]]
+iex(5)&amp;gt; nightire[:likes]
+[&amp;quot;music&amp;quot;, &amp;quot;programming&amp;quot;]
+
+iex(6)&amp;gt; younger = [age: 18] ++ nightire
+[age: 18, name: &amp;quot;nightire&amp;quot;, age: 35, likes: [&amp;quot;music&amp;quot;, &amp;quot;programming&amp;quot;]]
+iex(7)&amp;gt; younger[:age]
+18
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;关键字列表特别适合用作函数传参或者是用作构造 DSL，比如说：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;query = from p in People,
+   where: p.age &amp;gt; 18,
+   where: p.weight &amp;lt; 100
+  select: p
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;以及：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;DB.save record, name: &amp;quot;nightire&amp;quot;, admin: true
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这个例子同时也告诉我们 Elixir 允许在关键字列表作为函数调用的最后一个参数时省略 &lt;code&gt;[]&lt;/code&gt;。省略环绕标记这件事情有时候会让人晕一下下，特别是要小心下面这种情形：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;iex(1)&amp;gt; [1, 2, foo: &amp;quot;bar&amp;quot;]
+[1, 2, {:foo, &amp;quot;bar&amp;quot;}]
+iex(2)&amp;gt; {1, 2, foo: &amp;quot;bar&amp;quot;}
+{1, 2, [foo: &amp;quot;bar&amp;quot;]}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;除了作为函数参数列表的末尾项之外，作为元组及列表的末尾项也能省略环绕符号，这样的语法特性能省却很多字符但同时也会增加头脑中抽象解释和转换的负担。&lt;/p&gt;
+
+&lt;p&gt;为了操作关键字列表 Elixir 专门提供了 &lt;code&gt;Keyword&lt;/code&gt; 模块，底下的函数也不少。以前关键字列表是实现了 &lt;code&gt;Dict&lt;/code&gt; 模块的，后来 &lt;code&gt;Dict&lt;/code&gt; 被废弃了，以后还是专用 &lt;code&gt;Keyword&lt;/code&gt; 好。&lt;/p&gt;
+
+&lt;h2 id=&#34;映射-map:09efefb5582c071e5bc0e8d88fb3cabd&#34;&gt;映射（Map）&lt;/h2&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;我看到一些中文资料把作为数据结构的 &lt;code&gt;Map&lt;/code&gt; 称作图，这是不对的。数据结构中的图应该是 &lt;code&gt;Graph&lt;/code&gt;，而 &lt;code&gt;Map&lt;/code&gt; 虽然有地图的意思但却和数据结构所说的“图”大不相同。&lt;code&gt;Map&lt;/code&gt; 同时也有映射的意思，其实指的就是一一对应的键／值对，在这里的含义非常准确。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;JavaScript 中的对象兼具关键字列表和映射的特性，实际上关键字列表所具备的特性使得它并不适合作为纯数据载体，而映射则特别适合。我猜想这也是为什么 ES2015 会添加 &lt;code&gt;Map&lt;/code&gt; 来替代一部分原属于 &lt;code&gt;Object&lt;/code&gt; 的职责。&lt;/p&gt;
+
+&lt;p&gt;什么意思呢？首先，关键字列表的键只能是原子，相对的 JavaScript 对象的键名只能是字符串（其实还有符号类型，但是属于新数据类型，流传度不高），这就不够灵活了对吧。映射则没有这种限制，任何值都可以做映射中的键和值——包括复合类型；而且还能是表达式。另外如果映射中的键名全部是原子则可以使用关键字列表的语法来定义以提高便利性。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;iex(1)&amp;gt; %{0 =&amp;gt; 0, &amp;quot;one&amp;quot; =&amp;gt; 1, :two =&amp;gt; 2, [1, 2, 3] =&amp;gt; 3}
+%{0 =&amp;gt; 0, :two =&amp;gt; 2, [1, 2, 3] =&amp;gt; 3, &amp;quot;one&amp;quot; =&amp;gt; 1}
+
+iex(2)&amp;gt; %{one: 1, two: 2}
+%{one: 1, two: 2}
+iex(3)&amp;gt; %{one: 1, two: 2} == %{:one =&amp;gt; 1, :two =&amp;gt; 2}
+true
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;其次，映射里的数据是不关心顺序的，而且键也不能重复，如果有重复的键添加进来则会覆盖之前的同名键值对。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;iex(1)&amp;gt; %{one: 1, one: &amp;quot;1&amp;quot;}
+%{one: &amp;quot;1&amp;quot;}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这一特性使得映射在模式匹配时比关键字列表有用（特别是键名唯一性），看看这些例子：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;iex(1)&amp;gt; %{} = %{:foo =&amp;gt; &amp;quot;foo&amp;quot;, &amp;quot;bar&amp;quot; =&amp;gt; :bar}
+%{:foo =&amp;gt; &amp;quot;foo&amp;quot;, &amp;quot;bar&amp;quot; =&amp;gt; :bar}
+
+iex(2)&amp;gt; %{:foo =&amp;gt; str} = %{:foo =&amp;gt; &amp;quot;foo&amp;quot;, &amp;quot;bar&amp;quot; =&amp;gt; :bar}
+%{:foo =&amp;gt; &amp;quot;foo&amp;quot;, &amp;quot;bar&amp;quot; =&amp;gt; :bar}
+iex(3)&amp;gt; str
+&amp;quot;foo&amp;quot;
+
+iex(4)&amp;gt; %{:baz =&amp;gt; any} = %{:foo =&amp;gt; &amp;quot;foo&amp;quot;, &amp;quot;bar&amp;quot; =&amp;gt; :bar}
+** (MatchError) no match of right hand side value: %{:foo =&amp;gt; &amp;quot;foo&amp;quot;, &amp;quot;bar&amp;quot; =&amp;gt; :bar}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;做这种事情的时候是没法依靠关键字列表的：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;iex(1)&amp;gt; [foo: str] = [foo: &amp;quot;foo&amp;quot;, bar: &amp;quot;bar&amp;quot;]
+** (MatchError) no match of right hand side value: [foo: &amp;quot;foo&amp;quot;, bar: &amp;quot;bar&amp;quot;]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;在 Elixir 中，会经常这样使用映射：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;response_types = %{
+  {:error, :enoent} =&amp;gt; :fatal,
+  {:error, :busy} =&amp;gt; :retry
+}
+# %{{:error, :busy} =&amp;gt; :retry, {:error, :enoent} =&amp;gt; :fatal}
+
+response_types[{:error, :busy}]
+# :retry
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;而在 JavaScript 中如果只考虑对象的话这是不可想象的，因为你不能用另一个对象去做键。这也是为什么 ES2015 要添加 &lt;code&gt;Map&lt;/code&gt; 类型的缘故，因为它可以做到：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-javascript&#34;&gt;const responseTypes = new Map()
+responseTypes.set([&amp;quot;error&amp;quot;, &amp;quot;enoent&amp;quot;], &amp;quot;fatal&amp;quot;)
+responseTypes.set([&amp;quot;error&amp;quot;, &amp;quot;busy&amp;quot;], &amp;quot;retry&amp;quot;)
+
+for (let [key, value] of responseTypes) {
+  console.log(key, value)
+}
+// =&amp;gt; [&amp;quot;error&amp;quot;, &amp;quot;enoent&amp;quot;] &amp;quot;fatal&amp;quot;
+// =&amp;gt; [&amp;quot;error&amp;quot;, &amp;quot;busy&amp;quot;] &amp;quot;retry&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;因为 JavaScript 没有元组（尽管有类似原子的符号（Symbol）），所以这个例子不会像 Elixir 那么便利（除非先把作为键名的数组引用保存下来），不过同样的数据结构还是做得到的。&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;Map&lt;/code&gt; 模块提供了和 &lt;code&gt;Keyword&lt;/code&gt; 模块非常类似的函数，以前它们都是实现自 &lt;code&gt;Dict&lt;/code&gt; 的，但是 again，&lt;code&gt;Dict&lt;/code&gt; 被废弃了哦！&lt;/p&gt;
+
+&lt;p&gt;映射提供了独有的语法来访问和更新键名为原子的值，这一点很有用处：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;iex(1)&amp;gt; map = %{:a =&amp;gt; 1, 2 =&amp;gt; :b}
+%{2 =&amp;gt; :b, :a =&amp;gt; 1}
+iex(2)&amp;gt; map.a
+1
+iex(3)&amp;gt; map.c
+** (KeyError) key :c not found in: %{2 =&amp;gt; :b, :a =&amp;gt; 1}
+
+iex(3)&amp;gt; %{map | :a =&amp;gt; &amp;quot;1&amp;quot;}
+%{2 =&amp;gt; :b, :a =&amp;gt; &amp;quot;1&amp;quot;}
+iex(4)&amp;gt; %{map | :c =&amp;gt; 3}
+** (KeyError) key :c not found in: %{2 =&amp;gt; :b, :a =&amp;gt; 1}
+    (stdlib) :maps.update(:c, 3, %{2 =&amp;gt; :b, :a =&amp;gt; 1})
+    (stdlib) erl_eval.erl:255: anonymous fn/2 in :erl_eval.expr/5
+    (stdlib) lists.erl:1262: :lists.foldl/3
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;乍一看这似乎只是一个语法特性，但在实践中这种语法会带来风格上的变化，&lt;a href=&#34;http://blog.plataformatec.com.br/2014/09/writing-assertive-code-with-elixir/&#34;&gt;这篇文章&lt;/a&gt;描述了 Elixir 程序员是如何使用这种语法来实现更加简洁的“断定式”编码风格的。以后我也会单独撰文来说说这种 &lt;em&gt;assertive code&lt;/em&gt; 风格。&lt;/p&gt;
+
+&lt;p&gt;综合以上可以发现 JavaScript 的 &lt;code&gt;Object&lt;/code&gt; 是综合了关键字列表与映射的特性的，相对而言更加接近关键字列表；过去由于却少 &lt;code&gt;Map&lt;/code&gt; 类型所以也把它当作映射来用，但实际上映射和关键字列表有本质上的差异，适用的场景也非常不同。在学习了 Elixir 之后，反而对 JavaScript 的 &lt;code&gt;Object&lt;/code&gt; 和 &lt;code&gt;Map&lt;/code&gt; 也有了非常明确的理解，真可谓相得益彰啊。&lt;/p&gt;
+
+&lt;p&gt;那么下一篇我要讲函数了，等不及要写点真正有用的东西了😸 ！&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>JavaScript 程序员眼中的 Elixir：模式匹配</title>
       <link>http://very-geek.github.io/article/elixir-for-javascript-programmer-part-01/</link>
       <pubDate>Wed, 04 May 2016 00:00:00 +0800</pubDate>
       
