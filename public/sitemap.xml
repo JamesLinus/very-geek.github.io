@@ -3,8 +3,13 @@
   
   <url>
     <loc>http://very-geek.github.io/</loc>
-    <lastmod>2016-05-06T13:03:20+08:00</lastmod>
+    <lastmod>2016-05-07T00:00:00+08:00</lastmod>
     <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://very-geek.github.io/article/elixir-for-javascript-programmer-part-04/</loc>
+    <lastmod>2016-05-07T00:00:00+08:00</lastmod>
   </url>
   
   <url>

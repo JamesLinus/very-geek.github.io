@@ -6,8 +6,212 @@
     <description>Recent content in Elixir on 太极客</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Fri, 06 May 2016 13:03:20 +0800</lastBuildDate>
+    <lastBuildDate>Sat, 07 May 2016 00:00:00 +0800</lastBuildDate>
     <atom:link href="http://very-geek.github.io/tags/elixir/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>JavaScript 程序员眼中的 Elixir：递归</title>
+      <link>http://very-geek.github.io/article/elixir-for-javascript-programmer-part-04/</link>
+      <pubDate>Sat, 07 May 2016 00:00:00 +0800</pubDate>
+      
+      <guid>http://very-geek.github.io/article/elixir-for-javascript-programmer-part-04/</guid>
+      <description>
+
+&lt;p&gt;老实说我一直特别害怕递归，即使我知道它的原理其实并不复杂，但我看到一些稍微复杂一些的递归函数定义我就头大😱 ，大概是大脑缺陷吧。但是自从学了 Elixir 我就不怕不怕啦～（真是脑缺……）&lt;/p&gt;
+
+&lt;p&gt;这篇我豁出去跟递归干上了，就让我们用前面讲到的数据结构和函数的基础知识来聊聊 Elixir 里的递归吧。&lt;/p&gt;
+
+&lt;p&gt;先看看下面的“预热”代码：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;iex(1)&amp;gt; [1 | [2 | [3 | [4 | [5 | []]]]]]
+[1, 2, 3, 4, 5]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;晕吗？挺住。我们说过了：列表都可以表示为 &lt;code&gt;[head | tail]&lt;/code&gt; 的形式，&lt;code&gt;head&lt;/code&gt; 是第一个值，&lt;code&gt;tail&lt;/code&gt; 则是剩下的部分。由于 &lt;code&gt;tail&lt;/code&gt; 也还是列表，所以它自己也可以表示为另外一个 &lt;code&gt;[head | tail]&lt;/code&gt;……以此类推下去，任何列表都可以还原成上面代码的那种表达形式。&lt;/p&gt;
+
+&lt;p&gt;这就是递归！无论多复杂的结构都能用一个最简的形式不停重复自己直到无法再构成这个最简形式为止。下面我们就用递归的形式来实现一些常用的函数，到最后你就会觉得 &lt;code&gt;[head | tail]&lt;/code&gt; 的形式无比自然。&lt;/p&gt;
+
+&lt;p&gt;先来一个简单的：统计列表的长度。这件事情用递归的思想来表达就是：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;空列表的长度是 0（终止递归的条件）&lt;/li&gt;
+&lt;li&gt;非空列表的长度是 1 加上&amp;lt;列表尾的长度&amp;gt;
+
+&lt;ul&gt;
+&lt;li&gt;因为列表尾是除去列表头的列表，所以它的长度又是 1 加上&amp;lt;列表尾的长度&amp;gt;
+
+&lt;ul&gt;
+&lt;li&gt;因为列表尾是……
+
+&lt;ul&gt;
+&lt;li&gt;&amp;hellip;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;看到了吗？终有那么一刻列表尾会递归至空列表，于是只要成功匹配第一条规则就可以终止递归了。正如我们第一篇所谈过的，模式匹配在这里发挥着重要的作用。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;defmodule AwesomeList do
+  def len([]),            do: 0
+  def len([head | tail]), do: 1 + len(tail)
+end
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;一些个人感悟：对我来说递归会让我头脑“卡住”的地方在于我会这么想——“OK，第一遍没问题，但是当每一次递归执行 &lt;code&gt;len/1&lt;/code&gt; 的时候“+ 1”的中间结果保存在哪里了呢？&lt;/p&gt;
+
+&lt;p&gt;后来我终于认识到：没有中间结果，只有中间过程！或者你这么想：为了计算 &lt;code&gt;1 + len(tail)&lt;/code&gt; 的中间结果（假设有保存中间变量这种机制的话），我们先得求出 &lt;code&gt;len(tail)&lt;/code&gt; 的值然后才能 &lt;code&gt;+ 1&lt;/code&gt;；那么 &lt;code&gt;len(tail)&lt;/code&gt; 又会做同样的事情直到最后一层递归的 &lt;code&gt;tail&lt;/code&gt; 是一个空列表这时候才会返回 &lt;code&gt;0&lt;/code&gt; 给我们。&lt;/p&gt;
+
+&lt;p&gt;假设我们针对 &lt;code&gt;[1, 2, 3]&lt;/code&gt; 来执行这个递归函数，那么中间的过程其实就是 &lt;code&gt;1 + 1 + 1 + 0&lt;/code&gt;，也就是说还等不到你保存中间任何一个结果的时候，最终的算式就已经形成了。此时哪里还需要“保存中间结果”呢？直接就得到答案了。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;递归其实就是用最笨的“公式”一步一步的计算哪怕很复杂的数据结构，让人来计算的话递归恐怕是最没效率的方式了，但是计算机恰恰最擅长这个：大量的简单重复计算。Elixir 的语法（包括多函数体、模式匹配在内）使得递归的写法非常的简单直白，对人来阅读和理解也是相对非常友好的。&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;上面的代码如果写成 .exs 文件然后编译的话会警告你说：变量 head 没有使用。可以写成 &lt;code&gt;_head&lt;/code&gt; 来让 Elixir 忽略这个不用的变量。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;这个例子尽管简单但却非常实用，它可以演变成很多实用的函数，比如说把列表中的每一项累加求和：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;defmodule AwesomeList do
+  def sum([]),            do: 0
+  def sum([head | tail]), do: head + sum(tail)
+end
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;或者依次平方：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;defmodule AwesomeList do
+  def square([]),            do: []
+  def square([head | tail]), do: [head * head | square(tail)]
+end
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;code&gt;AwesomeList.square/1&lt;/code&gt; 的例子也同时展示了利用头尾构造新的列表，这很像我们使用 &lt;code&gt;Array.prototype.map&lt;/code&gt; 方法所实现的结果。那么问题来了：可不可以用递归的方式创造一个更加通用的 &lt;code&gt;map&lt;/code&gt; 函数呢？当然可以，只需要接收一个函数来完成具体的转换就可以了：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;defmodule AwesomeList do
+  def map([], _func),           do: []
+  def map([head | tail], func), do: [func.(head) | map(tail, func)]
+end
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;于是我们可以用这个通用函数来做任何事情，比如还是依次平方：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;AwesomeList.map([1, 2, 3], &amp;amp;(&amp;amp;1 * &amp;amp;1))
+[1, 4, 9]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;为免初学者不能理解：&lt;code&gt;&amp;amp;(&amp;amp;1 * &amp;amp;1)&lt;/code&gt; 等价于 &lt;code&gt;fn (n) -&amp;gt; n * n end&lt;/code&gt;。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;或者来利用标准函数库里的函数，比如说把所有单词首字母大写：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;AwesomeList.map([&amp;quot;apple&amp;quot;, &amp;quot;banana&amp;quot;, &amp;quot;cherry&amp;quot;], &amp;amp;(String.capitalize/1))
+[&amp;quot;Apple&amp;quot;, &amp;quot;Banana&amp;quot;, &amp;quot;Cherry&amp;quot;]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;对比一下 &lt;a href=&#34;https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map#Polyfill&#34;&gt;JavaScript 对 &lt;code&gt;map&lt;/code&gt; 函数的实现&lt;/a&gt;（引用自 Mozilla Developer Network），你会发现递归的实现是多么美好呀～😻&lt;/p&gt;
+
+&lt;h2 id=&#34;传递而不是暂存:bc47e3389af65a29e90f762d6a229559&#34;&gt;传递而不是暂存&lt;/h2&gt;
+
+&lt;p&gt;前面我们写了一个很简单的累加求和，然而它的局限性很大，因为它是“暗示”从零开始做累加的，如果我们希望从一个非零的数字开始怎么做呢？实际上这个要求就等于要做一个更加通用的 &lt;code&gt;Array.prototype.reduce&lt;/code&gt; 函数了，但是让我们放缓脚步一步一步来。&lt;/p&gt;
+
+&lt;p&gt;第一，我们让累加函数接收一个初识累加值 &lt;em&gt;accumulator&lt;/em&gt; ，我们并不会修改它（记住不可变数据）而是通过递归把它传递下去：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;defmodule AwesomeList do
+  def sum([], acc),            do: acc
+  def sum([head | tail], acc), do: sum(tail, head + acc)
+end
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;这个累加和之前的累加实现的是一样的功能，但不同的是使用了一个聚合器（如果你给初识值为 &lt;code&gt;0&lt;/code&gt; 的话）。所以说在很多情况下，递归实现是不需要中间值的。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;第二，我们借助前面实现 &lt;code&gt;AwesomeList.map/2&lt;/code&gt; 的经验来实现 &lt;code&gt;AwesomeList.reduce/3&lt;/code&gt;，它要接收的三个参数是：列表，处理函数和聚合器（如累加器）：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;defmodule AwesomeList do
+  def reduce([], _func, acc),           do: acc
+  def reduce([head | tail], func, acc), do: reduce(tail, func, func.(head, acc))
+end
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;我们用 &lt;code&gt;func.(head, acc)&lt;/code&gt; 替代了之前的 &lt;code&gt;head + acc&lt;/code&gt;，于是就让 &lt;code&gt;reduce&lt;/code&gt; 不仅限于累加而是取决于 &lt;code&gt;func&lt;/code&gt; 能做什么。我们来“累减”玩玩？&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;AwesomeList.reduce([1, 2, 3, 4], 10, &amp;amp;(&amp;amp;2 - &amp;amp;1))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;strong&gt;请特别注意 &lt;code&gt;&amp;amp;(&amp;amp;2 - &amp;amp;1)&lt;/code&gt; 这里两个参数反过来写的，&lt;/strong&gt;这是因为 &lt;code&gt;AwesomeList.reduce/3&lt;/code&gt; 的实现里我们执行 &lt;code&gt;func.(head, acc)&lt;/code&gt; 的传參顺序用来做累减需要反过来用 &lt;code&gt;acc&lt;/code&gt; 去减 &lt;code&gt;head&lt;/code&gt; 才能得到正确的结果。&lt;/p&gt;
+
+&lt;h2 id=&#34;复杂一些的列表模式匹配:bc47e3389af65a29e90f762d6a229559&#34;&gt;复杂一些的列表模式匹配&lt;/h2&gt;
+
+&lt;p&gt;不是所有的列表处理都是一次一个就可以完成的，我们试一个典型的例子：两两比较，直到找出列表中的最大项。&lt;/p&gt;
+
+&lt;p&gt;首先，如果处理的列表为空，那么应该返回一个无效的结果，我们简单的返回 &lt;code&gt;nil&lt;/code&gt; 好了：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;defmodule AwesomeList do
+  def max([]), do: nil
+end
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;其次，如果处理的列表只有一项，那就直接返回它：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;defmodule AwesomeList do
+  def max([]),  do: nil
+  def max([x]), do: x
+end
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;接下来是我们尚未探索过的特性。我们知道任何列表都可以表达为：&lt;code&gt;[head | tail]&lt;/code&gt;，不过模式匹配的时候联结操作符（也就是 &lt;code&gt;|&lt;/code&gt;）可以分割不只一项，也就是说如果列表项超过一项的时候，我们也可以表达为：&lt;code&gt;[a, b | tail]&lt;/code&gt;，于是分割的时候就不止取一个 &lt;code&gt;head&lt;/code&gt; 而是前面的两项。于是当我们有两项被匹配出来之后，我们就可以使用守护语句来比较它们的大小：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;defmodule AwesomeList do
+  def max([]),                       do: nil
+  def max([x]),                      do: x
+  def max([a, b | tail]) when a &amp;gt; b, do: max([a | tail])
+end
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;如果第三条定义也无法匹配成功就说明 &lt;code&gt;b &amp;gt;= a&lt;/code&gt;，所以我们直接忽略 &lt;code&gt;a&lt;/code&gt; 就好了：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;defmodule AwesomeList do
+  def max([]),                       do: nil
+  def max([x]),                      do: x
+  def max([a, b | tail]) when a &amp;gt; b, do: max([a | tail])
+  def max([_, b | tail]),            do: max([b | tail])
+end
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这个实现可以工作，不过我们还可以利用标准函数让它变得更简洁：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;defmodule AwesomeList do
+  def max([]),            do: nil
+  def max([x]),           do: x
+  def max([head | tail]), do: Kernel.max(head, max(tail))
+end
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;因为 &lt;code&gt;Kernel.max/2&lt;/code&gt; 会帮你完成大小比较的事情，所以便不需要自己去写守护语句了。当然不总是有现成的函数可以用，比如说两两交换吧：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;defmodule AwesomeList do
+  def swap([]), do: []
+  def swap([a, b | tail]), do: [b, a | swap(tail)]
+end
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这个函数的实现有一个最大的问题：如果你传入奇数个数的列表，那么递归到最终会出现只剩一个的情况，因为我们没有处理这种情况的定义于是就抛出错误了。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;defmodule AwesomeList do
+  def swap([]),            do: []
+  def swap([a, b | tail]), do: [b, a | swap(tail)]
+  def swap([a]),           do: [a]
+end
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;后两个函数定义的顺序会影响最终结果，所以要注意模式匹配的顺序问题。&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>JavaScript 程序员眼中的 Elixir：函数</title>
