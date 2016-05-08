@@ -197,3 +197,91 @@ end
 ```
 
 后两个函数定义的顺序会影响最终结果，所以要注意模式匹配的顺序问题。
+
+## 处理多维列表
+
+假设我们有一些学生花名册的数据，需要用二维的列表来构成：
+
+```elixir
+students = [
+  # [name, age, gender, grade]
+  ["Ann",   16, "female", 1],
+  ["Bob",   19, "male",   3],
+  ["Cindy", 18, "female", 3],
+  ["David", 17, "male",   2],
+]
+```
+
+让我们试着找出所有三年级的学生吧（最后一个属性是年级）：
+
+```elixir
+defmodule Students do
+  def for_grade_3([]), do: []
+  def for_grade_3([[name, age, gender, 3] | tail]) do
+    [[name, age, gender, 3] | for_grade_3([tail])
+  end
+end
+```
+
+以上是我们已经反复实践过多次的“一直到列表为空”的递归模式了，可是仔细想想看：我们的规则是匹配所有**四项列表且第四项是 3** 的列表，然而那些能匹配**四项列表且第四项不是 3** 的列表却被我们遗漏了。因此我们还必须加上一条函数定义：
+
+```elixir
+defmodule Students do
+  def for_grade_3([]), do: []
+  def for_grade_3([[name, age, gender, 3] | tail]) do
+    [[name, age, gender, 3] | for_grade_3(tail)]
+  end
+  def for_grade_3([_ | tail]), do: for_grade_3(tail)
+end
+```
+
+当然我们可以写的更明确一些，如：`def for_grade_3([[name, age, gender, _] | tail])`，但由于我们根本不关心 `head` 是什么（只是要确定有且未匹配成功）所以可以直接省略为 `_`。
+
+接着我们通过传递第二个参数来让该函数更灵活，这也是做过很多次的事情应该难不倒你，不过请想想看要怎么往：
+
+```elixir
+defmodule Students do
+  def for_grade([], _grade), do: []
+  def for_grade([[name, age, gender, grade] | tail], grade) do
+    [[name, age, gender, grade] | for_grade(tail, grade)]
+  end
+  def for_grade([_ | tail], grade), do: for_grade(tail, grade)
+end
+```
+
+现在你是不是觉得二维列表的模式匹配写起来很是讨厌？甚至会想为什么不把除了 `grade` 之外的变量都忽略掉（也就是用 `_` 替代）？
+
+这想法是非常有理的，不过还有一个小技巧会让这个想法变得更简单——连续匹配：
+
+
+```elixir
+defmodule Students do
+  # 1st for_grade/2
+
+  def for_grade([head = [_, _, _, grade] | tail], grade) do
+    [head | for_grade(tail, grade)]
+  end
+
+  # 3rd for_grade/2
+end
+```
+
+我们用占位符取代不关心的几个属性，紧接着又用 `head` 匹配了整个四项列表，于是就可以用它来指代匹配成功的列表项了。非常的优雅高效！👍🏻
+
+最后，我们应用刚学到的知识来写一个生成顺序数字组成的列表，比如说 `AwesomeList.span(2, 6)` 会生成 `[2, 3, 4, 5, 6, 7]` 这样的列表。我们可以分别用守护语句和模式匹配来实现它：
+
+```elixir
+# 守护语句版本
+defmodule AwesomeList do
+  def span(from, to) when from > to, do: []
+  def span(from, to),                do: [from | span(from + 1, to)]
+end
+
+# 模式匹配版本
+defmodule AwesomeList do
+  def span(_from = to, to), do: [to]
+  def span(from, to),       do: [from | span(from + 1, to)]
+end
+```
+
+守护语句版本较容易理解，而模式匹配版本简直是 Awesome！不过呢，这两个实现都不够严谨，会出现传错参数（比如 `AwesomeList.span(7, 2)` 的时候）造成死循环的情况。实际上我们可以用标准函数库来直接做到这件事情。那么下一篇我们就来看看列表的标准函数库里那些常用的函数吧。
