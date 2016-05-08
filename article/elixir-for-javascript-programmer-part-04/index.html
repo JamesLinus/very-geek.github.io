@@ -1,0 +1,383 @@
+    <!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="author" content="太极客">
+		<meta name="description" content="长夜有尽时，苦思无绝期">
+		<meta name="generator" content="Hugo 0.15" />
+		<title>JavaScript 程序员眼中的 Elixir：递归 &middot; 太极客</title>
+		<link rel="shortcut icon" href="http://very-geek.github.io/images/favicon.ico">
+		<link rel="stylesheet" href="http://very-geek.github.io/css/style.css">
+		<link rel="stylesheet" href="http://very-geek.github.io/css/highlight.css">
+		
+
+		
+		<link rel="stylesheet" href="http://very-geek.github.io/fontawesome/css/font-awesome.min.css">
+		
+
+		
+		<link href="http://very-geek.github.io/index.xml" rel="alternate" type="application/rss+xml" title="太极客" />
+		
+	</head>
+
+    <body>
+       <nav class="main-nav">
+	
+	
+		<a href='http://very-geek.github.io/'> <span class="arrow">←</span>首页</a>
+	
+
+	
+		<a href='http://very-geek.github.io/about'>关于</a>
+	
+
+	
+	<a class="cta" href="http://very-geek.github.io/index.xml">订阅</a>
+	
+</nav>
+
+        <section id="wrapper">
+            <article class="post">
+                <header>
+                    <h1>JavaScript 程序员眼中的 Elixir：递归</h1>
+                    <h2 class="headline">
+                    May 7, 2016 
+                    <br>
+                    
+                    
+                        
+                            <a href="http://very-geek.github.io/tags/elixir">elixir</a>
+                        
+                    
+                    
+                    </h2>
+                </header>
+                <section id="post-body">
+                    
+
+<p>老实说我一直特别害怕递归，即使我知道它的原理其实并不复杂，但我看到一些稍微复杂一些的递归函数定义我就头大😱 ，大概是大脑缺陷吧。但是自从学了 Elixir 我就不怕不怕啦～（真是脑缺……）</p>
+
+<p>这篇我豁出去跟递归干上了，就让我们用前面讲到的数据结构和函数的基础知识来聊聊 Elixir 里的递归吧。</p>
+
+<p>先看看下面的“预热”代码：</p>
+
+<pre><code class="language-elixir">iex(1)&gt; [1 | [2 | [3 | [4 | [5 | []]]]]]
+[1, 2, 3, 4, 5]
+</code></pre>
+
+<p>晕吗？挺住。我们说过了：列表都可以表示为 <code>[head | tail]</code> 的形式，<code>head</code> 是第一个值，<code>tail</code> 则是剩下的部分。由于 <code>tail</code> 也还是列表，所以它自己也可以表示为另外一个 <code>[head | tail]</code>……以此类推下去，任何列表都可以还原成上面代码的那种表达形式。</p>
+
+<p>这就是递归！无论多复杂的结构都能用一个最简的形式不停重复自己直到无法再构成这个最简形式为止。下面我们就用递归的形式来实现一些常用的函数，到最后你就会觉得 <code>[head | tail]</code> 的形式无比自然。</p>
+
+<p>先来一个简单的：统计列表的长度。这件事情用递归的思想来表达就是：</p>
+
+<ul>
+<li>空列表的长度是 0（终止递归的条件）</li>
+<li>非空列表的长度是 1 加上&lt;列表尾的长度&gt;
+
+<ul>
+<li>因为列表尾是除去列表头的列表，所以它的长度又是 1 加上&lt;列表尾的长度&gt;
+
+<ul>
+<li>因为列表尾是……
+
+<ul>
+<li>&hellip;</li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul>
+
+<p>看到了吗？终有那么一刻列表尾会递归至空列表，于是只要成功匹配第一条规则就可以终止递归了。正如我们第一篇所谈过的，模式匹配在这里发挥着重要的作用。</p>
+
+<pre><code class="language-elixir">defmodule AwesomeList do
+  def len([]),            do: 0
+  def len([head | tail]), do: 1 + len(tail)
+end
+</code></pre>
+
+<blockquote>
+<p>一些个人感悟：对我来说递归会让我头脑“卡住”的地方在于我会这么想——“OK，第一遍没问题，但是当每一次递归执行 <code>len/1</code> 的时候“+ 1”的中间结果保存在哪里了呢？</p>
+
+<p>后来我终于认识到：没有中间结果，只有中间过程！或者你这么想：为了计算 <code>1 + len(tail)</code> 的中间结果（假设有保存中间变量这种机制的话），我们先得求出 <code>len(tail)</code> 的值然后才能 <code>+ 1</code>；那么 <code>len(tail)</code> 又会做同样的事情直到最后一层递归的 <code>tail</code> 是一个空列表这时候才会返回 <code>0</code> 给我们。</p>
+
+<p>假设我们针对 <code>[1, 2, 3]</code> 来执行这个递归函数，那么中间的过程其实就是 <code>1 + 1 + 1 + 0</code>，也就是说还等不到你保存中间任何一个结果的时候，最终的算式就已经形成了。此时哪里还需要“保存中间结果”呢？直接就得到答案了。</p>
+</blockquote>
+
+<p>递归其实就是用最笨的“公式”一步一步的计算哪怕很复杂的数据结构，让人来计算的话递归恐怕是最没效率的方式了，但是计算机恰恰最擅长这个：大量的简单重复计算。Elixir 的语法（包括多函数体、模式匹配在内）使得递归的写法非常的简单直白，对人来阅读和理解也是相对非常友好的。</p>
+
+<blockquote>
+<p>上面的代码如果写成 .exs 文件然后编译的话会警告你说：变量 head 没有使用。可以写成 <code>_head</code> 来让 Elixir 忽略这个不用的变量。</p>
+</blockquote>
+
+<p>这个例子尽管简单但却非常实用，它可以演变成很多实用的函数，比如说把列表中的每一项累加求和：</p>
+
+<pre><code class="language-elixir">defmodule AwesomeList do
+  def sum([]),            do: 0
+  def sum([head | tail]), do: head + sum(tail)
+end
+</code></pre>
+
+<p>或者依次平方：</p>
+
+<pre><code class="language-elixir">defmodule AwesomeList do
+  def square([]),            do: []
+  def square([head | tail]), do: [head * head | square(tail)]
+end
+</code></pre>
+
+<p><code>AwesomeList.square/1</code> 的例子也同时展示了利用头尾构造新的列表，这很像我们使用 <code>Array.prototype.map</code> 方法所实现的结果。那么问题来了：可不可以用递归的方式创造一个更加通用的 <code>map</code> 函数呢？当然可以，只需要接收一个函数来完成具体的转换就可以了：</p>
+
+<pre><code class="language-elixir">defmodule AwesomeList do
+  def map([], _func),           do: []
+  def map([head | tail], func), do: [func.(head) | map(tail, func)]
+end
+</code></pre>
+
+<p>于是我们可以用这个通用函数来做任何事情，比如还是依次平方：</p>
+
+<pre><code class="language-elixir">AwesomeList.map([1, 2, 3], &amp;(&amp;1 * &amp;1))
+[1, 4, 9]
+</code></pre>
+
+<blockquote>
+<p>为免初学者不能理解：<code>&amp;(&amp;1 * &amp;1)</code> 等价于 <code>fn (n) -&gt; n * n end</code>。</p>
+</blockquote>
+
+<p>或者来利用标准函数库里的函数，比如说把所有单词首字母大写：</p>
+
+<pre><code class="language-elixir">AwesomeList.map([&quot;apple&quot;, &quot;banana&quot;, &quot;cherry&quot;], &amp;(String.capitalize/1))
+[&quot;Apple&quot;, &quot;Banana&quot;, &quot;Cherry&quot;]
+</code></pre>
+
+<p>对比一下 <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map#Polyfill">JavaScript 对 <code>map</code> 函数的实现</a>（引用自 Mozilla Developer Network），你会发现递归的实现是多么美好呀～😻</p>
+
+<h2 id="传递而不是暂存:bc47e3389af65a29e90f762d6a229559">传递而不是暂存</h2>
+
+<p>前面我们写了一个很简单的累加求和，然而它的局限性很大，因为它是“暗示”从零开始做累加的，如果我们希望从一个非零的数字开始怎么做呢？实际上这个要求就等于要做一个更加通用的 <code>Array.prototype.reduce</code> 函数了，但是让我们放缓脚步一步一步来。</p>
+
+<p>第一，我们让累加函数接收一个初识累加值 <em>accumulator</em> ，我们并不会修改它（记住不可变数据）而是通过递归把它传递下去：</p>
+
+<pre><code class="language-elixir">defmodule AwesomeList do
+  def sum([], acc),            do: acc
+  def sum([head | tail], acc), do: sum(tail, head + acc)
+end
+</code></pre>
+
+<blockquote>
+<p>这个累加和之前的累加实现的是一样的功能，但不同的是使用了一个聚合器（如果你给初识值为 <code>0</code> 的话）。所以说在很多情况下，递归实现是不需要中间值的。</p>
+</blockquote>
+
+<p>第二，我们借助前面实现 <code>AwesomeList.map/2</code> 的经验来实现 <code>AwesomeList.reduce/3</code>，它要接收的三个参数是：列表，处理函数和聚合器（如累加器）：</p>
+
+<pre><code class="language-elixir">defmodule AwesomeList do
+  def reduce([], _func, acc),           do: acc
+  def reduce([head | tail], func, acc), do: reduce(tail, func, func.(head, acc))
+end
+</code></pre>
+
+<p>我们用 <code>func.(head, acc)</code> 替代了之前的 <code>head + acc</code>，于是就让 <code>reduce</code> 不仅限于累加而是取决于 <code>func</code> 能做什么。我们来“累减”玩玩？</p>
+
+<pre><code class="language-elixir">AwesomeList.reduce([1, 2, 3, 4], 10, &amp;(&amp;2 - &amp;1))
+</code></pre>
+
+<p><strong>请特别注意 <code>&amp;(&amp;2 - &amp;1)</code> 这里两个参数反过来写的，</strong>这是因为 <code>AwesomeList.reduce/3</code> 的实现里我们执行 <code>func.(head, acc)</code> 的传參顺序用来做累减需要反过来用 <code>acc</code> 去减 <code>head</code> 才能得到正确的结果。</p>
+
+<h2 id="复杂一些的列表模式匹配:bc47e3389af65a29e90f762d6a229559">复杂一些的列表模式匹配</h2>
+
+<p>不是所有的列表处理都是一次一个就可以完成的，我们试一个典型的例子：两两比较，直到找出列表中的最大项。</p>
+
+<p>首先，如果处理的列表为空，那么应该返回一个无效的结果，我们简单的返回 <code>nil</code> 好了：</p>
+
+<pre><code class="language-elixir">defmodule AwesomeList do
+  def max([]), do: nil
+end
+</code></pre>
+
+<p>其次，如果处理的列表只有一项，那就直接返回它：</p>
+
+<pre><code class="language-elixir">defmodule AwesomeList do
+  def max([]),  do: nil
+  def max([x]), do: x
+end
+</code></pre>
+
+<p>接下来是我们尚未探索过的特性。我们知道任何列表都可以表达为：<code>[head | tail]</code>，不过模式匹配的时候联结操作符（也就是 <code>|</code>）可以分割不只一项，也就是说如果列表项超过一项的时候，我们也可以表达为：<code>[a, b | tail]</code>，于是分割的时候就不止取一个 <code>head</code> 而是前面的两项。于是当我们有两项被匹配出来之后，我们就可以使用守护语句来比较它们的大小：</p>
+
+<pre><code class="language-elixir">defmodule AwesomeList do
+  def max([]),                       do: nil
+  def max([x]),                      do: x
+  def max([a, b | tail]) when a &gt; b, do: max([a | tail])
+end
+</code></pre>
+
+<p>如果第三条定义也无法匹配成功就说明 <code>b &gt;= a</code>，所以我们直接忽略 <code>a</code> 就好了：</p>
+
+<pre><code class="language-elixir">defmodule AwesomeList do
+  def max([]),                       do: nil
+  def max([x]),                      do: x
+  def max([a, b | tail]) when a &gt; b, do: max([a | tail])
+  def max([_, b | tail]),            do: max([b | tail])
+end
+</code></pre>
+
+<p>这个实现可以工作，不过我们还可以利用标准函数让它变得更简洁：</p>
+
+<pre><code class="language-elixir">defmodule AwesomeList do
+  def max([]),            do: nil
+  def max([x]),           do: x
+  def max([head | tail]), do: Kernel.max(head, max(tail))
+end
+</code></pre>
+
+<p>因为 <code>Kernel.max/2</code> 会帮你完成大小比较的事情，所以便不需要自己去写守护语句了。当然不总是有现成的函数可以用，比如说两两交换吧：</p>
+
+<pre><code class="language-elixir">defmodule AwesomeList do
+  def swap([]), do: []
+  def swap([a, b | tail]), do: [b, a | swap(tail)]
+end
+</code></pre>
+
+<p>这个函数的实现有一个最大的问题：如果你传入奇数个数的列表，那么递归到最终会出现只剩一个的情况，因为我们没有处理这种情况的定义于是就抛出错误了。</p>
+
+<pre><code class="language-elixir">defmodule AwesomeList do
+  def swap([]),            do: []
+  def swap([a, b | tail]), do: [b, a | swap(tail)]
+  def swap([a]),           do: [a]
+end
+</code></pre>
+
+<p>后两个函数定义的顺序会影响最终结果，所以要注意模式匹配的顺序问题。</p>
+
+                </section>
+            </article>
+            <footer id="post-meta" class="clearfix">
+                <a href="https://twitter.com/yu5454">
+                        <img class="avatar" src="http://very-geek.github.io/images/avatar.png">
+                        <div>
+                            <span class="dark">太极客</span>
+                            <span>As a designeer, I hope you can prove me wrong.</span>
+                        </div>
+                    </a>
+                <section id="sharing">
+                    <a class="twitter" href="https://twitter.com/intent/tweet?text=http%3a%2f%2fvery-geek.github.io%2farticle%2felixir-for-javascript-programmer-part-04%2f - JavaScript%20%e7%a8%8b%e5%ba%8f%e5%91%98%e7%9c%bc%e4%b8%ad%e7%9a%84%20Elixir%ef%bc%9a%e9%80%92%e5%bd%92 by @yu5454"><span class="icon-twitter"> yu5454</span></a>
+
+<a class="facebook" href="#" onclick="
+    window.open(
+      'https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(location.href),
+      'facebook-share-dialog',
+      'width=626,height=436');
+    return false;"><span class="icon-facebook-rect"> yu5454</span>
+</a>
+
+                </section>
+            </footer>
+
+            <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'very-geek';
+    var disqus_identifier = 'http:\/\/very-geek.github.io\/article\/elixir-for-javascript-programmer-part-04\/';
+    var disqus_title = 'JavaScript 程序员眼中的 Elixir：递归';
+    var disqus_url = 'http:\/\/very-geek.github.io\/article\/elixir-for-javascript-programmer-part-04\/';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+            <ul id="post-list" class="archive readmore">
+    <h3>推荐阅读</h3>
+    
+    
+        
+        <li>
+            <a href="http://very-geek.github.io/article/elixir-for-javascript-programmer-part-04/">JavaScript 程序员眼中的 Elixir：递归<aside class="dates">May 7</aside></a>
+        </li>
+        
+   
+    
+        
+        <li>
+            <a href="http://very-geek.github.io/article/elixir-for-javascript-programmer-part-03/">JavaScript 程序员眼中的 Elixir：函数<aside class="dates">May 6</aside></a>
+        </li>
+        
+   
+    
+        
+        <li>
+            <a href="http://very-geek.github.io/article/elixir-for-javascript-programmer-part-02/">JavaScript 程序员眼中的 Elixir：集合<aside class="dates">May 5</aside></a>
+        </li>
+        
+   
+    
+        
+        <li>
+            <a href="http://very-geek.github.io/article/elixir-for-javascript-programmer-part-01/">JavaScript 程序员眼中的 Elixir：模式匹配<aside class="dates">May 4</aside></a>
+        </li>
+        
+   
+    
+        
+        <li>
+            <a href="http://very-geek.github.io/insight/emberconf-2016-opening-keynote-by-yehuda-katz-and-tom-dale/">EmberConf 2016 开场演讲阅后感<aside class="dates">Apr 30</aside></a>
+        </li>
+        
+   
+</ul>
+            <footer id="footer">
+    
+        <div id="social">
+
+	
+	
+    <a class="symbol" href="https://www.facebook.com/yu5454">
+        <i class="fa fa-facebook"></i>
+    </a>
+    
+    <a class="symbol" href="https://github.com/nightire">
+        <i class="fa fa-github"></i>
+    </a>
+    
+    <a class="symbol" href="http://stackoverflow.com/users/1582747/nightire">
+        <i class="fa fa-stackoverflow"></i>
+    </a>
+    
+    <a class="symbol" href="https://twitter.com/yu5454">
+        <i class="fa fa-twitter"></i>
+    </a>
+    
+    <a class="symbol" href="http://weibo.com/nightire">
+        <i class="fa fa-weibo"></i>
+    </a>
+    
+
+
+</div>
+
+    
+    <p class="small">
+    
+        © 版权所有 2016 太极客
+    
+    </p>
+</footer>
+
+        </section>
+
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script src="http://very-geek.github.io/js/main.js"></script>
+<script src="http://very-geek.github.io/js/highlight.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+
+
+
+
+    </body>
+</html>
