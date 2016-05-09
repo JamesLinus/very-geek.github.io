@@ -198,6 +198,21 @@ end
 
 后两个函数定义的顺序会影响最终结果，所以要注意模式匹配的顺序问题。
 
+筛选（`AwesomeList.filter/2`）怎么做？其实很简单，筛选就是有条件输出版本的 `AwesomeList.map/2`，唯一的区别就是我们不总是返回 `[head | filter(tail)]`，而是在 `head` 不满足条件的时候只返回 `filter(tail)`（注意，不是返回 `[filter(tail)]`，因为前面有所返回的逻辑已经保证了肯定是列表，而这里只是继续递归。如果再把递归用 `[]` 包裹起来，那么所有 `else` 分支都会被嵌套一层列表）：
+
+```elixir
+defmodule AwesomeList do
+  def filter([], _fun), do: []
+  def filter([head | tail], fun) do
+    if fun.(head) do
+      [head | filter(tail, fun)]
+    else
+      filter(tail, fun)
+    end
+  end
+end
+```
+
 ## 处理多维列表
 
 假设我们有一些学生花名册的数据，需要用二维的列表来构成：
