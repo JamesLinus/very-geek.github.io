@@ -305,6 +305,93 @@ end
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;守护语句版本较容易理解，而模式匹配版本简直是 Awesome！不过呢，这两个实现都不够严谨，会出现传错参数（比如 &lt;code&gt;AwesomeList.span(7, 2)&lt;/code&gt; 的时候）造成死循环的情况。实际上我们可以用标准函数库来直接做到这件事情。那么下一篇我们就来看看列表的标准函数库里那些常用的函数吧。&lt;/p&gt;
+
+&lt;h2 id=&#34;尾递归优化-tail-recursion-optimization:bc47e3389af65a29e90f762d6a229559&#34;&gt;尾递归优化（Tail Recursion Optimization）&lt;/h2&gt;
+
+&lt;p&gt;最后我们来谈谈递归的一个进阶知识：尾递归优化。在我解释它是什么之前，让我们先看看之前所有递归函数里执行递归（也就是调用自己）的语句：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;# AwesomeList.len/1
+1 + len(tail)
+
+# AwesomeList.sum/1
+head + sum(tail)
+
+# AwesomeList.sum/2
+sum(tail, head + acc)
+
+# AwesomeList.square/1
+[head * head | square(tail)]
+
+# AwesomeList.map/2
+[func.(head) | map(tail, func)]
+
+# AwesomeList.reduce/3
+reduce(tail, func, func.(head, acc))
+
+# AwesomeList.max/2
+when a &amp;gt; b, do: max([a | tail])
+
+# AwesomeList.swap/2
+[b, a | swap(tail)]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;你看出什么蹊跷了吗？（提示：可以重点对比 &lt;code&gt;AwesomeList.sum/1&lt;/code&gt; 和 &lt;code&gt;AwesomeList.sum/2&lt;/code&gt;）&lt;/p&gt;
+
+&lt;p&gt;有些递归函数的执行就是直接调用自己，比如 &lt;code&gt;AwesomeList.sum/2&lt;/code&gt;；而有的则不是直接调用自己，比如 &lt;code&gt;AwesomeList.sum/1&lt;/code&gt;。说得更明确一些：递归函数的最后一个操作有的是直接调用自己，有的则是别的操作和调用自己的组合。&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;do: sum(tail, head + acc)&lt;/code&gt;：这叫&lt;strong&gt;最后一步操作是调用自己&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;do: head + sum(tail)&lt;/code&gt;：这就不同了，&lt;strong&gt;最后一步是 &lt;code&gt;+&lt;/code&gt; 调用自己的结果&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;这有什么区别呢？前者可以实现“尾递归优化”而后者不能。&lt;/p&gt;
+
+&lt;p&gt;我们知道递归就是不断执行自身的过程，不过我们还没提到这种不断执行自身的过程会带来一个副作用，即调用栈溢出（Stack Overflow）。尾递归调用是解释器提供的一种针对调用栈的优化，它让每一次递归的结果都替换掉自己，于是在同一时刻调用栈里只有一个函数，不会出现调用栈溢出的问题。&lt;/p&gt;
+
+&lt;p&gt;而尾递归调用的必要条件就是&lt;strong&gt;递归调用必须是最后一步操作&lt;/strong&gt;。理论上讲如果所有的递归函数定义都能满足尾递归调用的条件固然是完美的结果，但有的时候尾递归优化的递归函数并不是那么好写的，或者是要比普通的递归函数实现的复杂度高很多。因此是否需要尾递归优化主要还是先看你的递归函数是不是要处理特别大的集合数据（这样才会需要大数量级的调用栈堆叠）。&lt;/p&gt;
+
+&lt;p&gt;我们改写几个之前的递归函数让它们支持尾递归优化，以此为例来结束本篇文章吧。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;# 尾递归优化版 AwesomeList.len/2
+defmodule AwesomeList do
+  def len(list),                  do: len(list, 0)
+  def len([], count),             do: count
+  def len([_head | tail], count), do: len(tail, count + 1)
+end
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这个实现略微晦涩一些，我分别解释一下三条函数定义：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;首先匹配整个列表，此时暂不考虑分离 &lt;em&gt;head&lt;/em&gt; 和 &lt;em&gt;tail&lt;/em&gt; 且若匹配成功便递归并传入计算长度的初始值 &lt;code&gt;0&lt;/code&gt;。于是所有的列表都会先走这一条定义然后通过递归继续匹配下去&lt;/li&gt;
+&lt;li&gt;接着如果匹配到了空列表，那么直接返回当前的长度 &lt;code&gt;count&lt;/code&gt;。因为第一条传递了初始值，所以这一条定义匹配成功时总是直接返回 &lt;code&gt;0&lt;/code&gt; 且作为后续递归的终止条件&lt;/li&gt;
+&lt;li&gt;其它情况下递归分离 &lt;em&gt;head&lt;/em&gt; 和 &lt;em&gt;tail&lt;/em&gt; （忽略不需要的 &lt;em&gt;head&lt;/em&gt; ），并且给计数加一&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;其实并不难理解，要点就是为了在最后一步调用自身，一切中间过程都要想办法通过递归调用传递下去罢了。&lt;/p&gt;
+
+&lt;p&gt;最后再来一个尾递归优化版的 &lt;code&gt;AwesomeList.square&lt;/code&gt; 吧：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;# 尾递归优化版 AwesomeList.square/2
+defmodule AwesomeList do
+  def square(origin),              do: square(origin, [])
+  def square([], list),            do: Enum.reverse(list)
+  def square([head | tail], list), do: square(tail, [head * head | list])
+end
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;ol&gt;
+&lt;li&gt;我们需要一个列表来保存每一步递归时对原始列表元素 &lt;code&gt;head&lt;/code&gt; 的平方值，因此和前面的思路类似，先通过“囫囵”匹配（这是我自个儿发明的词，意思是不考虑匹配准确的结构，只要是列表就好）让递归调用传一个初始为空的列表 &lt;code&gt;list&lt;/code&gt; 进去&lt;/li&gt;
+&lt;li&gt;接着匹配到空列表的话就返回反转后的 &lt;code&gt;list&lt;/code&gt;。有两种情况：原始列表就是空的，那么就是返回反转的空 &lt;code&gt;list&lt;/code&gt;，结果还是空列表；递归一直到空的，这时的 &lt;code&gt;list&lt;/code&gt; 平方已经计算完成但顺序不对（我们是从头取元素然后又从头插入，所以是逆序），翻转后正确&lt;/li&gt;
+&lt;li&gt;第三条就是很常规的递归了，每次都会更新 &lt;code&gt;list&lt;/code&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;如果你觉得 &lt;code&gt;Enum.reverse/1&lt;/code&gt; 那里让你很不爽，那可以把第三条函数定义写成：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;def square([head | tail], list), do: square(tail, list ++ [head * head])
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这样便可以去掉 &lt;code&gt;Enum.reverse/1&lt;/code&gt; 了，然而我并不建议这样做，因为 &lt;code&gt;++&lt;/code&gt; 填充到列表尾部操作的消耗远比插入头部大得多，这一点我们在介绍列表特性的时候已经讲过了。&lt;/p&gt;
 </description>
     </item>
     
@@ -680,6 +767,27 @@ end
 &lt;p&gt;现在如果你传入负数的话，Elixir 会抛出错误告诉你没有能够处理此类参数的 &lt;code&gt;Factorial.of/1&lt;/code&gt;，这正好符合我们的需要。&lt;/p&gt;
 
 &lt;p&gt;在默认环境下，守护语句并不是万能的，&lt;a href=&#34;http://elixir-lang.org/getting-started/case-cond-and-if.html#expressions-in-guard-clauses&#34;&gt;Elixir 只提供了一些缺省的表达式供其使用&lt;/a&gt;。不过守护语句可用的表达式是可以扩展的，这算是一个高级话题，我们留待后谈。&lt;/p&gt;
+
+&lt;p&gt;有些时候我们可以灵活使用守护语句来简化模式匹配，例如在 Ruby on Rails 框架中有一个很好用的函数 &lt;code&gt;blank?&lt;/code&gt;，我们来写一写模式匹配的版本：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;def blank?(nil),    do: true
+def blank?(false),  do: true
+def blank?(&amp;quot;&amp;quot;),     do: true
+def blank?(_other), do: false
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;我们可以使用 &lt;code&gt;in&lt;/code&gt; 操作符来简化前三个函数定义：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;def blank?(value) when value in [nil, false, &amp;quot;&amp;quot;], do: true
+def blank?(_other),                               do: false
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;其实这个函数还可以简化成就一句话，而且还更加自然：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;def blank?(value), do: value in [nil, false, &amp;quot;&amp;quot;]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这还是比较容易理解的，我们这个例子只是为了演示模式匹配和守护语句的异同，现实中的代码自然还是最后一种最好，它也同时提示我们：当你希望函数返回的结果是布尔值的时候，很多时候都可以用内建的操作符／宏来解决。&lt;/p&gt;
 
 &lt;p&gt;我认为前面所介绍的内容已经涵盖了 Elixir 函数的基本特性，有了这些知识就足以进一步探索 Elixir 的世界了。但是和函数相关的还有一个非常非常重要的特性管道操作符还没有涉及，管道操作符是 Elixir 令人着迷的特色之一，但是谈它之前有必要先讲枚举（Enumerable）和流（Stream），函数在其中扮演的是“穿针引线”的角色。因此，本篇告一段落，下一篇我们先从列表和递归讲起，开始真正触及函数式编程的核心之处。&lt;/p&gt;
 </description>

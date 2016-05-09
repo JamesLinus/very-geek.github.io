@@ -395,4 +395,28 @@ end
 
 在默认环境下，守护语句并不是万能的，[Elixir 只提供了一些缺省的表达式供其使用](http://elixir-lang.org/getting-started/case-cond-and-if.html#expressions-in-guard-clauses)。不过守护语句可用的表达式是可以扩展的，这算是一个高级话题，我们留待后谈。
 
+有些时候我们可以灵活使用守护语句来简化模式匹配，例如在 Ruby on Rails 框架中有一个很好用的函数 `blank?`，我们来写一写模式匹配的版本：
+
+```elixir
+def blank?(nil),    do: true
+def blank?(false),  do: true
+def blank?(""),     do: true
+def blank?(_other), do: false
+```
+
+我们可以使用 `in` 操作符来简化前三个函数定义：
+
+```elixir
+def blank?(value) when value in [nil, false, ""], do: true
+def blank?(_other),                               do: false
+```
+
+其实这个函数还可以简化成就一句话，而且还更加自然：
+
+```elixir
+def blank?(value), do: value in [nil, false, ""]
+```
+
+这还是比较容易理解的，我们这个例子只是为了演示模式匹配和守护语句的异同，现实中的代码自然还是最后一种最好，它也同时提示我们：当你希望函数返回的结果是布尔值的时候，很多时候都可以用内建的操作符／宏来解决。
+
 我认为前面所介绍的内容已经涵盖了 Elixir 函数的基本特性，有了这些知识就足以进一步探索 Elixir 的世界了。但是和函数相关的还有一个非常非常重要的特性管道操作符还没有涉及，管道操作符是 Elixir 令人着迷的特色之一，但是谈它之前有必要先讲枚举（Enumerable）和流（Stream），函数在其中扮演的是“穿针引线”的角色。因此，本篇告一段落，下一篇我们先从列表和递归讲起，开始真正触及函数式编程的核心之处。

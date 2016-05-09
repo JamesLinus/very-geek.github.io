@@ -300,3 +300,88 @@ end
 ```
 
 守护语句版本较容易理解，而模式匹配版本简直是 Awesome！不过呢，这两个实现都不够严谨，会出现传错参数（比如 `AwesomeList.span(7, 2)` 的时候）造成死循环的情况。实际上我们可以用标准函数库来直接做到这件事情。那么下一篇我们就来看看列表的标准函数库里那些常用的函数吧。
+
+## 尾递归优化（Tail Recursion Optimization）
+
+最后我们来谈谈递归的一个进阶知识：尾递归优化。在我解释它是什么之前，让我们先看看之前所有递归函数里执行递归（也就是调用自己）的语句：
+
+```elixir
+# AwesomeList.len/1
+1 + len(tail)
+
+# AwesomeList.sum/1
+head + sum(tail)
+
+# AwesomeList.sum/2
+sum(tail, head + acc)
+
+# AwesomeList.square/1
+[head * head | square(tail)]
+
+# AwesomeList.map/2
+[func.(head) | map(tail, func)]
+
+# AwesomeList.reduce/3
+reduce(tail, func, func.(head, acc))
+
+# AwesomeList.max/2
+when a > b, do: max([a | tail])
+
+# AwesomeList.swap/2
+[b, a | swap(tail)]
+```
+
+你看出什么蹊跷了吗？（提示：可以重点对比 `AwesomeList.sum/1` 和 `AwesomeList.sum/2`）
+
+有些递归函数的执行就是直接调用自己，比如 `AwesomeList.sum/2`；而有的则不是直接调用自己，比如 `AwesomeList.sum/1`。说得更明确一些：递归函数的最后一个操作有的是直接调用自己，有的则是别的操作和调用自己的组合。
+
+- `do: sum(tail, head + acc)`：这叫**最后一步操作是调用自己**
+- `do: head + sum(tail)`：这就不同了，**最后一步是 `+` 调用自己的结果**
+
+这有什么区别呢？前者可以实现“尾递归优化”而后者不能。
+
+我们知道递归就是不断执行自身的过程，不过我们还没提到这种不断执行自身的过程会带来一个副作用，即调用栈溢出（Stack Overflow）。尾递归调用是解释器提供的一种针对调用栈的优化，它让每一次递归的结果都替换掉自己，于是在同一时刻调用栈里只有一个函数，不会出现调用栈溢出的问题。
+
+而尾递归调用的必要条件就是**递归调用必须是最后一步操作**。理论上讲如果所有的递归函数定义都能满足尾递归调用的条件固然是完美的结果，但有的时候尾递归优化的递归函数并不是那么好写的，或者是要比普通的递归函数实现的复杂度高很多。因此是否需要尾递归优化主要还是先看你的递归函数是不是要处理特别大的集合数据（这样才会需要大数量级的调用栈堆叠）。
+
+我们改写几个之前的递归函数让它们支持尾递归优化，以此为例来结束本篇文章吧。
+
+```elixir
+# 尾递归优化版 AwesomeList.len/2
+defmodule AwesomeList do
+  def len(list),                  do: len(list, 0)
+  def len([], count),             do: count
+  def len([_head | tail], count), do: len(tail, count + 1)
+end
+```
+
+这个实现略微晦涩一些，我分别解释一下三条函数定义：
+
+1. 首先匹配整个列表，此时暂不考虑分离 _head_ 和 _tail_ 且若匹配成功便递归并传入计算长度的初始值 `0`。于是所有的列表都会先走这一条定义然后通过递归继续匹配下去
+1. 接着如果匹配到了空列表，那么直接返回当前的长度 `count`。因为第一条传递了初始值，所以这一条定义匹配成功时总是直接返回 `0` 且作为后续递归的终止条件
+1. 其它情况下递归分离 _head_ 和 _tail_ （忽略不需要的 _head_ ），并且给计数加一
+
+其实并不难理解，要点就是为了在最后一步调用自身，一切中间过程都要想办法通过递归调用传递下去罢了。
+
+最后再来一个尾递归优化版的 `AwesomeList.square` 吧：
+
+```elixir
+# 尾递归优化版 AwesomeList.square/2
+defmodule AwesomeList do
+  def square(origin),              do: square(origin, [])
+  def square([], list),            do: Enum.reverse(list)
+  def square([head | tail], list), do: square(tail, [head * head | list])
+end
+```
+
+1. 我们需要一个列表来保存每一步递归时对原始列表元素 `head` 的平方值，因此和前面的思路类似，先通过“囫囵”匹配（这是我自个儿发明的词，意思是不考虑匹配准确的结构，只要是列表就好）让递归调用传一个初始为空的列表 `list` 进去
+1. 接着匹配到空列表的话就返回反转后的 `list`。有两种情况：原始列表就是空的，那么就是返回反转的空 `list`，结果还是空列表；递归一直到空的，这时的 `list` 平方已经计算完成但顺序不对（我们是从头取元素然后又从头插入，所以是逆序），翻转后正确
+1. 第三条就是很常规的递归了，每次都会更新 `list`
+
+如果你觉得 `Enum.reverse/1` 那里让你很不爽，那可以把第三条函数定义写成：
+
+```elixir
+def square([head | tail], list), do: square(tail, list ++ [head * head])
+```
+
+这样便可以去掉 `Enum.reverse/1` 了，然而我并不建议这样做，因为 `++` 填充到列表尾部操作的消耗远比插入头部大得多，这一点我们在介绍列表特性的时候已经讲过了。
