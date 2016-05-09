@@ -211,6 +211,20 @@ end
 
 &lt;p&gt;后两个函数定义的顺序会影响最终结果，所以要注意模式匹配的顺序问题。&lt;/p&gt;
 
+&lt;p&gt;筛选（&lt;code&gt;AwesomeList.filter/2&lt;/code&gt;）怎么做？其实很简单，筛选就是有条件输出版本的 &lt;code&gt;AwesomeList.map/2&lt;/code&gt;，唯一的区别就是我们不总是返回 &lt;code&gt;[head | filter(tail)]&lt;/code&gt;，而是在 &lt;code&gt;head&lt;/code&gt; 不满足条件的时候只返回 &lt;code&gt;filter(tail)&lt;/code&gt;（注意，不是返回 &lt;code&gt;[filter(tail)]&lt;/code&gt;，因为前面有所返回的逻辑已经保证了肯定是列表，而这里只是继续递归。如果再把递归用 &lt;code&gt;[]&lt;/code&gt; 包裹起来，那么所有 &lt;code&gt;else&lt;/code&gt; 分支都会被嵌套一层列表）：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-elixir&#34;&gt;defmodule AwesomeList do
+  def filter([], _fun), do: []
+  def filter([head | tail], fun) do
+    if fun.(head) do
+      [head | filter(tail, fun)]
+    else
+      filter(tail, fun)
+    end
+  end
+end
+&lt;/code&gt;&lt;/pre&gt;
+
 &lt;h2 id=&#34;处理多维列表:bc47e3389af65a29e90f762d6a229559&#34;&gt;处理多维列表&lt;/h2&gt;
 
 &lt;p&gt;假设我们有一些学生花名册的数据，需要用二维的列表来构成：&lt;/p&gt;
