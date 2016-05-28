@@ -1,7 +1,7 @@
 +++
 categories = ["博文"]
 date = "2016-05-30T00:00:00+08:00"
-description = "Elixir tricks #1: How to pattern match empty map?"
+description = "假设某函数接受一个参数映射，有时候要检查该映射是否为空，有时候则要检查该映射是否有某一个特定的键名，用模式匹配该如何做呢？"
 isCJKLanguage = true
 tags = ["elixir"]
 title = "Elixir tricks #1: How to pattern match empty map?"
@@ -29,10 +29,10 @@ end
 ## `%{}` 总是匹配任何映射而不是匹配空映射
 
 ```elixir
-iex(1)> match? %{}, %{:foo => "foo", :bar => "bar", :baz => "baz"}
+iex(1)> match? %{}, %{:foo => "foo", :bar => "bar"}
 true
 iex(1)> match? %{}, %{}
-false
+true
 ```
 
 如上所示，如果想知道映射是不是空的，你不能草率的用 `%{}` 去做匹配，因为它能匹配任何一个映射！而且它连结构（Struct）也能匹配（但反过来不行，即你不能用结构来匹配映射）。我想这是模式匹配中的一个例外（不清楚是不是唯一一个），需要特别注意；它的好处在于可以实现针对映射的解构（Destructure）。

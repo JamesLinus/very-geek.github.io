@@ -366,9 +366,9 @@ end
 end
 </code></pre>
 
-<h3 id="守护语句-guard-clause:9a3f0e45bc161da5e8e8c12625d36160">守护语句（Guard Clause）</h3>
+<h3 id="保护语句-guard-clause:9a3f0e45bc161da5e8e8c12625d36160">保护语句（Guard Clause）</h3>
 
-<p>守护语句的概念在 JavaScript（及其他高级语言）中也是有的，我们经常在函数中使用守护性的预先判断来提前返回或中断函数的执行：</p>
+<p>保护语句的概念在 JavaScript（及其他高级语言）中也是有的，我们经常在函数中使用保护性的预先判断来提前返回或中断函数的执行：</p>
 
 <pre><code class="language-javascript">function rename(oldName, newName) {
   if (!oldName) return false // or throw errors if needed
@@ -377,7 +377,7 @@ end
 }
 </code></pre>
 
-<p>概念是很简单的，不过在 Elixir 中的写法很不同了，Elixir 在语法层面直接提供了守护语句的写法：</p>
+<p>概念是很简单的，不过在 Elixir 中的写法很不同了，Elixir 在语法层面直接提供了保护语句的写法：</p>
 
 <pre><code class="language-elixir">defmodule TellMe do
   def what_is(x) when is_atom(x) do
@@ -394,11 +394,11 @@ end
 end
 </code></pre>
 
-<p>上面这段代码纯属演示性质，实际意义不大，不过我们可以看到守护语句填补了模式匹配的一些“空白”，这一点是很有意义的。</p>
+<p>上面这段代码纯属演示性质，实际意义不大，不过我们可以看到保护语句填补了模式匹配的一些“空白”，这一点是很有意义的。</p>
 
-<h3 id="模式匹配-守护语句:9a3f0e45bc161da5e8e8c12625d36160">模式匹配＋守护语句</h3>
+<h3 id="模式匹配-保护语句:9a3f0e45bc161da5e8e8c12625d36160">模式匹配＋保护语句</h3>
 
-<p>这两者的搭配是 Elixir 语言中很精彩的且具有代表性的应用技巧。模式匹配能满足结构和值相等性的比较并能为变量进行必要的值绑定，但是如果你要针对值做一些额外的比较——比如说类型检测或是转换测试之类的，就需要守护语句来协助了。</p>
+<p>这两者的搭配是 Elixir 语言中很精彩的且具有代表性的应用技巧。模式匹配能满足结构和值相等性的比较并能为变量进行必要的值绑定，但是如果你要针对值做一些额外的比较——比如说类型检测或是转换测试之类的，就需要保护语句来协助了。</p>
 
 <p>一个很经典的例子是递归阶乘在 Elixir 里的实现：</p>
 
@@ -410,7 +410,7 @@ end
 
 <p>简单、优雅，但是不完善——如果我们传入的 <code>n</code> 是负数会怎样呢？（无限循环，因为第一个 <code>of/1</code> 永远也匹配不到）</p>
 
-<p>如果我们不关心处理负数的情况，那就可以简单的加上守护语句：</p>
+<p>如果我们不关心处理负数的情况，那就可以简单的加上保护语句：</p>
 
 <pre><code class="language-elixir">defmodule Factorial do
   def of(0), do: 1
@@ -420,9 +420,9 @@ end
 
 <p>现在如果你传入负数的话，Elixir 会抛出错误告诉你没有能够处理此类参数的 <code>Factorial.of/1</code>，这正好符合我们的需要。</p>
 
-<p>在默认环境下，守护语句并不是万能的，<a href="http://elixir-lang.org/getting-started/case-cond-and-if.html#expressions-in-guard-clauses">Elixir 只提供了一些缺省的表达式供其使用</a>。不过守护语句可用的表达式是可以扩展的，这算是一个高级话题，我们留待后谈。</p>
+<p>在默认环境下，保护语句并不是万能的，<a href="http://elixir-lang.org/getting-started/case-cond-and-if.html#expressions-in-guard-clauses">Elixir 只提供了一些缺省的表达式供其使用</a>。不过保护语句可用的表达式是可以扩展的，这算是一个高级话题，我们留待后谈。</p>
 
-<p>有些时候我们可以灵活使用守护语句来简化模式匹配，例如在 Ruby on Rails 框架中有一个很好用的函数 <code>blank?</code>，我们来写一写模式匹配的版本：</p>
+<p>有些时候我们可以灵活使用保护语句来简化模式匹配，例如在 Ruby on Rails 框架中有一个很好用的函数 <code>blank?</code>，我们来写一写模式匹配的版本：</p>
 
 <pre><code class="language-elixir">def blank?(nil),    do: true
 def blank?(false),  do: true
@@ -441,7 +441,7 @@ def blank?(_other),                               do: false
 <pre><code class="language-elixir">def blank?(value), do: value in [nil, false, &quot;&quot;]
 </code></pre>
 
-<p>这还是比较容易理解的，我们这个例子只是为了演示模式匹配和守护语句的异同，现实中的代码自然还是最后一种最好，它也同时提示我们：当你希望函数返回的结果是布尔值的时候，很多时候都可以用内建的操作符／宏来解决。</p>
+<p>这还是比较容易理解的，我们这个例子只是为了演示模式匹配和保护语句的异同，现实中的代码自然还是最后一种最好，它也同时提示我们：当你希望函数返回的结果是布尔值的时候，很多时候都可以用内建的操作符／宏来解决。</p>
 
 <p>我认为前面所介绍的内容已经涵盖了 Elixir 函数的基本特性，有了这些知识就足以进一步探索 Elixir 的世界了。但是和函数相关的还有一个非常非常重要的特性管道操作符还没有涉及，管道操作符是 Elixir 令人着迷的特色之一，但是谈它之前有必要先讲枚举（Enumerable）和流（Stream），函数在其中扮演的是“穿针引线”的角色。因此，本篇告一段落，下一篇我们先从列表和递归讲起，开始真正触及函数式编程的核心之处。</p>
 

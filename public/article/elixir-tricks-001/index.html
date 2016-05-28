@@ -77,10 +77,10 @@ end
 
 <h2 id="总是匹配任何映射而不是匹配空映射:3f573c1ebf213423927507174abb3618"><code>%{}</code> 总是匹配任何映射而不是匹配空映射</h2>
 
-<pre><code class="language-elixir">iex(1)&gt; match? %{}, %{:foo =&gt; &quot;foo&quot;, :bar =&gt; &quot;bar&quot;, :baz =&gt; &quot;baz&quot;}
+<pre><code class="language-elixir">iex(1)&gt; match? %{}, %{:foo =&gt; &quot;foo&quot;, :bar =&gt; &quot;bar&quot;}
 true
 iex(1)&gt; match? %{}, %{}
-false
+true
 </code></pre>
 
 <p>如上所示，如果想知道映射是不是空的，你不能草率的用 <code>%{}</code> 去做匹配，因为它能匹配任何一个映射！而且它连结构（Struct）也能匹配（但反过来不行，即你不能用结构来匹配映射）。我想这是模式匹配中的一个例外（不清楚是不是唯一一个），需要特别注意；它的好处在于可以实现针对映射的解构（Destructure）。</p>
