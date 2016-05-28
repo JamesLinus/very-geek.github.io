@@ -1,0 +1,271 @@
+    <!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="author" content="太极客">
+		<meta name="description" content="长夜有尽时，苦思无绝期">
+		<meta name="generator" content="Hugo 0.15" />
+		<title>Elixir tricks #1: How to pattern match empty map? &middot; 太极客</title>
+		<link rel="shortcut icon" href="http://very-geek.github.io/images/favicon.ico">
+		<link rel="stylesheet" href="http://very-geek.github.io/css/style.css">
+		<link rel="stylesheet" href="http://very-geek.github.io/css/highlight.css">
+		
+
+		
+		<link rel="stylesheet" href="http://very-geek.github.io/fontawesome/css/font-awesome.min.css">
+		
+
+		
+		<link href="http://very-geek.github.io/index.xml" rel="alternate" type="application/rss+xml" title="太极客" />
+		
+	</head>
+
+    <body>
+       <nav class="main-nav">
+	
+	
+		<a href='http://very-geek.github.io/'> <span class="arrow">←</span>首页</a>
+	
+
+	
+		<a href='http://very-geek.github.io/about'>关于</a>
+	
+
+	
+	<a class="cta" href="http://very-geek.github.io/index.xml">订阅</a>
+	
+</nav>
+
+        <section id="wrapper">
+            <article class="post">
+                <header>
+                    <h1>Elixir tricks #1: How to pattern match empty map?</h1>
+                    <h2 class="headline">
+                    May 30, 2016 
+                    <br>
+                    
+                    
+                        
+                            <a href="http://very-geek.github.io/tags/elixir">elixir</a>
+                        
+                    
+                    
+                    </h2>
+                </header>
+                <section id="post-body">
+                    
+
+<p><strong>假设某函数接受一个参数映射，有时候要检查该映射是否为空，有时候则要检查该映射是否有某一个特定的键名，用模式匹配该如何做呢？</strong></p>
+
+<p>我看到一个错误的例子：</p>
+
+<pre><code class="language-elixir">defmodule Example do
+  # check to see if empty
+  def check(%{}), do: {:empty, %{}}
+
+  # check to see if :foo key exists
+  def check(params) when :foo in Map.keys(params), do: {:found, params}
+
+  # otherwise return it as is
+  def check(params), do: {:ok, params}
+end
+</code></pre>
+
+<p>这个例子比较典型，是多数入门级选手很容易写出来的代码，下面逐个分析一下：</p>
+
+<h2 id="总是匹配任何映射而不是匹配空映射:3f573c1ebf213423927507174abb3618"><code>%{}</code> 总是匹配任何映射而不是匹配空映射</h2>
+
+<pre><code class="language-elixir">iex(1)&gt; match? %{}, %{:foo =&gt; &quot;foo&quot;, :bar =&gt; &quot;bar&quot;, :baz =&gt; &quot;baz&quot;}
+true
+iex(1)&gt; match? %{}, %{}
+false
+</code></pre>
+
+<p>如上所示，如果想知道映射是不是空的，你不能草率的用 <code>%{}</code> 去做匹配，因为它能匹配任何一个映射！而且它连结构（Struct）也能匹配（但反过来不行，即你不能用结构来匹配映射）。我想这是模式匹配中的一个例外（不清楚是不是唯一一个），需要特别注意；它的好处在于可以实现针对映射的解构（Destructure）。</p>
+
+<p>眼下我所知的正确姿势有下列几种：</p>
+
+<pre><code class="language-elixir"># use this recommended way
+def check(params) when params == %{}, do: {:empty, %{}}
+
+# or this, but not recommended
+def check(params) when map_size(params) == 0, do: {:empty, %{}}
+</code></pre>
+
+<h2 id="保护语句不是万能的:3f573c1ebf213423927507174abb3618">保护语句不是万能的</h2>
+
+<p>第二个函数定义就很有说头了。首先 <code>when :foo in Map.keys(params)</code> 是不能用作保护语句的，因为保护语句是在运行时执行的，你必须要非常小心别把耗时的表达式用在这里，上面的例子在编译时会报错如下：</p>
+
+<blockquote>
+<p>** (ArgumentError) invalid args for operator &ldquo;in&rdquo;, it expects a compile time list or range on the right side when used in guard expressions, got: Map.keys(params)</p>
+</blockquote>
+
+<p>意思就是：如果你要在保护语句里用 <code>in</code> 操作符，那就要确保它右边的列表是一个编译时列表（即在编译时就能确定其值的列表），而上例中的 <code>params</code> 是在函数被调用时才传入的参数，因此这句表达时总是需要在运行时中进行求值——这就是一种耗时的运算。</p>
+
+<p>另外这个例子也反映了作者没有理解模式匹配和保护语句的正确使用场景，其实这里才是使用模式匹配的绝佳地方：</p>
+
+<pre><code class="language-elixir">def check(%{foo: _} = params), do: {:found, params}
+</code></pre>
+
+<p><code>%{foo: _}</code> 匹配参数映射里名为 <code>:foo</code> 的键，但由于其值在接下来的函数体内并无用到，所以 <code>_</code> 把它忽略掉；接着又把整个映射用 <code>= params</code> 绑定给 <code>params</code>，于是可以将其作为该函数的返回值使用。</p>
+
+<p>在此处是我觉得有些别扭的地方，因为按照模式匹配的标准定义右值并不是绑定，但是在函数声明里又确实有这种用法，暂时我也没找到权威的阐述……权当 JavaScript 中的解构重命名用好了。</p>
+
+<p>最后把修改后的完整例子也写出来：</p>
+
+<pre><code class="language-elixir">defmodule Example do
+  def check(params) when params == %{}, do {:empty, params}
+  def check(%{foo: _} = params), do: {:found, params}
+  def check(params), do: {:ok, params}
+end
+
+# usages:
+iex(1)&gt; Example.check(%{})
+{:empty, %{}}
+iex(2)&gt; Example.check(%{foo: &quot;foo&quot;})
+{:found, %{foo: &quot;foo&quot;}}
+iex(3)&gt; Example.check(%{bar: &quot;bar&quot;})
+{:ok, %{bar: &quot;bar&quot;}}
+iex(4)&gt; Example.check(%{foo: &quot;foo&quot;, bar: &quot;bar&quot;})
+{:found, %{bar: &quot;bar&quot;, foo: &quot;foo&quot;}}
+</code></pre>
+
+                </section>
+            </article>
+            <footer id="post-meta" class="clearfix">
+                <a href="https://twitter.com/yu5454">
+                        <img class="avatar" src="http://very-geek.github.io/images/avatar.png">
+                        <div>
+                            <span class="dark">太极客</span>
+                            <span>As a designeer, I hope you can prove me wrong.</span>
+                        </div>
+                    </a>
+                <section id="sharing">
+                    <a class="twitter" href="https://twitter.com/intent/tweet?text=http%3a%2f%2fvery-geek.github.io%2farticle%2felixir-tricks-001%2f - Elixir%20tricks%20%231%3a%20How%20to%20pattern%20match%20empty%20map%3f by @yu5454"><span class="icon-twitter"> yu5454</span></a>
+
+<a class="facebook" href="#" onclick="
+    window.open(
+      'https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(location.href),
+      'facebook-share-dialog',
+      'width=626,height=436');
+    return false;"><span class="icon-facebook-rect"> yu5454</span>
+</a>
+
+                </section>
+            </footer>
+
+            <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'very-geek';
+    var disqus_identifier = 'http:\/\/very-geek.github.io\/article\/elixir-tricks-001\/';
+    var disqus_title = 'Elixir tricks #1: How to pattern match empty map?';
+    var disqus_url = 'http:\/\/very-geek.github.io\/article\/elixir-tricks-001\/';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+            <ul id="post-list" class="archive readmore">
+    <h3>推荐阅读</h3>
+    
+    
+        
+        <li>
+            <a href="http://very-geek.github.io/article/elixir-tricks-001/">Elixir tricks #1: How to pattern match empty map?<aside class="dates">May 30</aside></a>
+        </li>
+        
+   
+    
+        
+        <li>
+            <a href="http://very-geek.github.io/article/elixir-for-javascript-programmer-part-04/">JavaScript 程序员眼中的 Elixir：递归<aside class="dates">May 7</aside></a>
+        </li>
+        
+   
+    
+        
+        <li>
+            <a href="http://very-geek.github.io/article/elixir-for-javascript-programmer-part-03/">JavaScript 程序员眼中的 Elixir：函数<aside class="dates">May 6</aside></a>
+        </li>
+        
+   
+    
+        
+        <li>
+            <a href="http://very-geek.github.io/article/elixir-for-javascript-programmer-part-02/">JavaScript 程序员眼中的 Elixir：集合<aside class="dates">May 5</aside></a>
+        </li>
+        
+   
+    
+        
+        <li>
+            <a href="http://very-geek.github.io/article/elixir-for-javascript-programmer-part-01/">JavaScript 程序员眼中的 Elixir：模式匹配<aside class="dates">May 4</aside></a>
+        </li>
+        
+   
+    
+        
+        <li>
+            <a href="http://very-geek.github.io/insight/emberconf-2016-opening-keynote-by-yehuda-katz-and-tom-dale/">EmberConf 2016 开场演讲阅后感<aside class="dates">Apr 30</aside></a>
+        </li>
+        
+   
+</ul>
+            <footer id="footer">
+    
+        <div id="social">
+
+	
+	
+    <a class="symbol" href="https://www.facebook.com/yu5454">
+        <i class="fa fa-facebook"></i>
+    </a>
+    
+    <a class="symbol" href="https://github.com/nightire">
+        <i class="fa fa-github"></i>
+    </a>
+    
+    <a class="symbol" href="http://stackoverflow.com/users/1582747/nightire">
+        <i class="fa fa-stackoverflow"></i>
+    </a>
+    
+    <a class="symbol" href="https://twitter.com/yu5454">
+        <i class="fa fa-twitter"></i>
+    </a>
+    
+    <a class="symbol" href="http://weibo.com/nightire">
+        <i class="fa fa-weibo"></i>
+    </a>
+    
+
+
+</div>
+
+    
+    <p class="small">
+    
+        © 版权所有 2016 太极客
+    
+    </p>
+</footer>
+
+        </section>
+
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script src="http://very-geek.github.io/js/main.js"></script>
+<script src="http://very-geek.github.io/js/highlight.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+
+
+
+
+    </body>
+</html>
